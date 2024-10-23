@@ -1,0 +1,39 @@
+{
+  "name": "gittop-api",
+  "version": "1.0.0",
+  "description": "Easy to use API for getting information about the most popular repositories on GitHub",
+  "main": "src/index.ts",
+  "scripts": {
+    "start:dev": "npx nodemon",
+    "build": "rimraf ./build && tsc",
+    "start": "npm run build && node build/index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aratakileo/gittop-api.git"
+  },
+  "keywords": [
+    "git",
+    "github",
+    "api",
+    "sql",
+    "mysql",
+    "cli",
+    "cli-lient"
+  ],
+  "author": "Arataki Leo",
+  "license": "LGPL-3.0",
+  "bugs": {
+    "url": "https://github.com/aratakileo/gittop-api/issues"
+  },
+  "homepage": "https://github.com/aratakileo/gittop-api#readme",
+  "devDependencies": {
+    "@types/node": "^22.7.9",
+    "mysql2": "^3.11.3",
+    "result-js": "^4.0.2",
+    "rimraf": "^6.0.1",
+    "typescript": "^5.6.3"
+  },
+  "dependencies": {}
+}
