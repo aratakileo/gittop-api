@@ -1,13 +1,13 @@
-import {Result} from "./result";
-import fs from 'fs';
+import {readFileAndGetOrThrow} from "./utils";
 
-const TOKEN_FILE = 'src/data/sensitive/github.token';
-
-// this action is placed in a separate named function to focus on the possible occurrence of an error
-const getGithubTokenOrThrow = () => fs.readFileSync(TOKEN_FILE, 'utf8');
+const SENSITIVE_DIR = 'src/data/sensitive/';
+export const REPOSITORIES_CONTAINER_FILE_PATH = 'src/data/cached/repositories.json';
 
 const GITHUB_CONFIG = {
-    token: getGithubTokenOrThrow(),
+    token: readFileAndGetOrThrow(
+        SENSITIVE_DIR + 'github.token',
+        'expected file `src/data/sensitive/github.token` with inserted GitHub token there'
+    ),
     endpoint: 'https://api.github.com/search/repositories',
     query: '?q=stars:>10000&sort=stars&order=desc'
 } as const;
@@ -18,12 +18,25 @@ export const GITHUB_REQUEST_OPTIONS = {
     path: GITHUB_CONFIG.endpoint + GITHUB_CONFIG.query,
     method: 'GET',
     headers: {
-        'Authorization': 'token ' + GITHUB_CONFIG.token,
+        'Authorization': GITHUB_CONFIG.token,  // using GitHub token allows to make a way more requests
         'User-Agent': 'https://github.com/aratakileo/gittop-api'
     } as const
 } as const;
 
-// 10 minutes
-export const UPDATE_INTERVAL_MILLISECONDS = 10 * 60 * 100;
+export const DB_CONFIG = {
+    host: readFileAndGetOrThrow(
+        SENSITIVE_DIR + 'db.host',
+        'expected file `src/data/sensitive/db.host` with inserted database host there'
+    ),
+    user: readFileAndGetOrThrow(
+        SENSITIVE_DIR + 'db.username',
+        'expected file `src/data/sensitive/db.username` with inserted database username there'
+    ),
+    password: readFileAndGetOrThrow(
+        SENSITIVE_DIR + 'db.password',
+        'expected file `src/data/sensitive/db.password` with inserted database password there'
+    ),
+    database: 'popular_repositories'
+} as const;
 
-export type Callback<T = void, E = unknown> = (result: Result<T | null, E | null>) => void;
+export const MILLISECONDS_PER_MINUTE = 60 * 1000;
