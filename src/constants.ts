@@ -2,6 +2,7 @@ import {readFileAndGetOrThrow} from "./utils";
 
 const SENSITIVE_DIR = 'src/data/sensitive/';
 export const REPOSITORIES_CONTAINER_FILE_PATH = 'src/data/cached/repositories.json';
+export const REPOS_ON_PAGE = 10;
 
 const GITHUB_CONFIG = {
     token: readFileAndGetOrThrow(

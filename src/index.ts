@@ -1,8 +1,15 @@
-import {DB_CONFIG, GITHUB_REQUEST_OPTIONS, MILLISECONDS_PER_MINUTE, REPOSITORIES_CONTAINER_FILE_PATH} from "./constants";
+import {
+    DB_CONFIG,
+    GITHUB_REQUEST_OPTIONS,
+    MILLISECONDS_PER_MINUTE,
+    REPOS_ON_PAGE,
+    REPOSITORIES_CONTAINER_FILE_PATH
+} from "./constants";
 import https from "https";
 import {existsSync, readFileSync, writeFileSync} from "fs";
 import mysql from "mysql2";
-import {runImmediatelyAndThenEvery} from "./utils";
+import {normalizeRepositoryObject, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
+import {ApiCall, ApiServer, ResponseCode, ResponseError} from "./apiServer";
 
 const getProgramConfig = () => {
     const config = {
@@ -90,4 +97,126 @@ const collectData = async () => {
     await saveData(repos);
 };
 
-runImmediatelyAndThenEvery(collectData, programConfig.request_delay_in_minutes * MILLISECONDS_PER_MINUTE);
+let intervalDataSyncer: NodeJS.Timeout | null = null;
+
+const runIntervalDataSyncer = (force = false) => {
+    if (intervalDataSyncer !== null && force) {
+        clearInterval(intervalDataSyncer);
+        intervalDataSyncer = null;
+    }
+
+    if (intervalDataSyncer === null)
+        intervalDataSyncer = runImmediatelyAndThenEvery(
+            collectData,
+            programConfig.request_delay_in_minutes * MILLISECONDS_PER_MINUTE
+        );
+}
+
+runIntervalDataSyncer();
+
+const getRepos = (page: number) => new Promise<any>((resolve, reject) => {
+    const pool = mysql.createPool(DB_CONFIG);
+    const repos_query = 'SELECT *, (select username from owners where owners.id = owner_id) as owner_username FROM repositories limit ?, ?;';
+
+    pool.query(repos_query, [page * REPOS_ON_PAGE, REPOS_ON_PAGE], (err, result) => {
+        if (err) {
+            reject(err);
+            return;
+        }
+
+        // @ts-ignore
+        resolve(result.map(row => normalizeRepositoryObject(row)));
+    });
+});
+
+const getRepoPages = () => new Promise<any>((resolve, reject) => {
+    const pool = mysql.createPool(DB_CONFIG);
+    const pages_count_query = 'SELECT count(*) as count FROM repositories;';
+
+    pool.query(pages_count_query, (err, result) => {
+        if (err) {
+            reject(err);
+            return;
+        }
+
+        resolve({
+            // @ts-ignore
+            'pages': result[0].count % REPOS_ON_PAGE + Math.trunc(result[0].count / REPOS_ON_PAGE)
+        });
+    });
+});
+
+const getRepo = (repoSign: RepositorySign) => new Promise<any>((resolve, reject) => {
+    const pool = mysql.createPool(DB_CONFIG);
+    const query_values = [repoSign.isById ? repoSign.id : repoSign.name];
+    const query_condition = repoSign.isById ? 'repositories.id = ?' : 'repositories.name = ?';
+    const repo_query = `SELECT *, (select username from owners where owners.id = owner_id) as owner_username FROM repositories where ${query_condition};`;
+
+    pool.query(repo_query, query_values, (err, result) => {
+        if (err) {
+            reject(err);
+            return;
+        }
+
+        // @ts-ignore
+        resolve(normalizeRepositoryObject(result[0]));
+    });
+});
+
+const server = new ApiServer(async (apiCall, data, resolve, reject) => {
+    const processPromise = (promise: Promise<any>, then: (result: any) => void) => promise.then(then).catch(reason => {
+        // WARNING: never return error message as response due to it may have sensitive information
+        reject(
+            ResponseError.INTERNAL_ERROR,
+            'oops, something went wrong...',
+            ResponseCode.INTERNAL_ERROR
+        );
+
+        console.error(reason);
+    });
+
+    switch (apiCall) {
+        case ApiCall.SYNCNOW:
+            runIntervalDataSyncer(true);
+            resolve({
+                'message': 'Successfully synced just now'
+            });
+            return;
+        case ApiCall.GET_REPOS:
+            await processPromise(getRepos(data.page), repos => {
+                if (repos.length == 0) {
+                    reject(
+                        ResponseError.INVALID,
+                        `the requested repositories page number '${data.page}' is out of bounds`,
+                        ResponseCode.BAD_REQUEST
+                    );
+                    return;
+                }
+
+                resolve({
+                    repos: repos,
+                    page: data.page
+                });
+            });
+            return;
+        case ApiCall.GET_REPO_PAGES_COUNT:
+            await processPromise(getRepoPages(), result => resolve(result));
+            return;
+        case ApiCall.GET_REPO:
+            await processPromise(getRepo(data), repo => {
+                if (repo) {
+                    resolve(repo);
+                    return;
+                }
+
+                reject(
+                    ResponseError.NOT_FOUND,
+                    `requested ${data.toString()} does not exist`,
+                    ResponseCode.BAD_REQUEST
+                );
+            });
+            return;
+    }
+});
+
+server.run();
