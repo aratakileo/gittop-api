@@ -1,15 +1,17 @@
 import {
+    ApiCall,
     DB_CONFIG,
     GITHUB_REQUEST_OPTIONS,
     MILLISECONDS_PER_MINUTE,
     REPOS_ON_PAGE,
-    REPOSITORIES_CONTAINER_FILE_PATH
+    REPOSITORIES_CONTAINER_FILE_PATH, ResponseCode, ResponseError
 } from "./constants";
 import https from "https";
 import {existsSync, readFileSync, writeFileSync} from "fs";
 import mysql from "mysql2";
 import {normalizeRepositoryObject, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
-import {ApiCall, ApiServer, ResponseCode, ResponseError} from "./apiServer";
+import {ApiServer} from "./apiServer";
+import {fetchApi} from "../utils";
 
 const getProgramConfig = () => {
     const config = {
@@ -41,21 +43,13 @@ const getRepositories = () => new Promise<Array<any>>((resolve, reject) => {
         return;
     }
 
-    const request = https.request(GITHUB_REQUEST_OPTIONS, res => {
-        let data = '';
+    fetchApi(GITHUB_REQUEST_OPTIONS).then(data => {
+        let result = data.body.items;
 
-        res.on('data', chunk => data += chunk);
-        res.on('end', () => {
-            let result = JSON.parse(data).items;
+        writeFileSync(REPOSITORIES_CONTAINER_FILE_PATH, JSON.stringify(result));
 
-            writeFileSync(REPOSITORIES_CONTAINER_FILE_PATH, JSON.stringify(result));
-
-            resolve(result);
-        });
-    });
-
-    request.on('error', err => reject(err));
-    request.end();
+        resolve(result);
+    }).catch(reject);
 });
 
 const saveData = async (repos: Array<any>) => {

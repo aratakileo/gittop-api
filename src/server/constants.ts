@@ -41,3 +41,27 @@ export const DB_CONFIG = {
 } as const;
 
 export const MILLISECONDS_PER_MINUTE = 60 * 1000;
+
+
+export enum ResponseCode {
+    OK = 200,
+    BAD_REQUEST = 400,
+    NOT_FOUND = 404,
+    INTERNAL_ERROR = 500
+}
+
+
+export enum ResponseError {
+    NOT_FOUND,
+    DEPRECATED,
+    INVALID,
+    INTERNAL_ERROR
+}
+
+
+export enum ApiCall {
+    GET_REPO,
+    GET_REPOS,
+    GET_REPO_PAGES_COUNT,
+    SYNCNOW
+}

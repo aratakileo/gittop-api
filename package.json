@@ -8,7 +8,12 @@
     "start_server": "npm run build && node build/server/index.js -ucd=false -qdm=60",
     "start_server:test_db": "npm run build && node build/server/index.js -qdm=1",
     "start_server:test_github_request": "npm run build && node build/server/index.js -ucd=false -qdm=120",
-    "start_client": "npm run build && node build/client/index.js"
+    "start_client:sync_now": "npm run build && node build/client/index.js syncnow",
+    "start_client:get_gitignore_repo": "npm run build && node build/client/index.js get repo gitignore",
+    "start_client:get_linux_repo": "npm run build && node build/client/index.js get repo linux",
+    "start_client:get_invalid_repo": "npm run build && node build/client/index.js get repo invalid",
+    "start_client:get_repos_second_page": "npm run build && node build/client/index.js get repos 1",
+    "start_client:get_repos_out_of_bounds_page": "npm run build && node build/client/index.js get repos 999"
   },
   "repository": {
     "type": "git",

@@ -1,35 +1,12 @@
 import http from "http";
 import {URL} from "url";
 import {RepositorySign} from "./utils";
-
-
-export enum ResponseCode {
-    OK = 200,
-    BAD_REQUEST = 400,
-    NOT_FOUND = 404,
-    INTERNAL_ERROR = 500
-}
-
-
-export enum ResponseError {
-    NOT_FOUND,
-    DEPRECATED,
-    INVALID,
-    INTERNAL_ERROR
-}
+import {ApiCall, ResponseCode, ResponseError} from "./constants";
 
 
 enum ApiVersion {
     V1,
     V2
-}
-
-
-export enum ApiCall {
-    GET_REPO,
-    GET_REPOS,
-    GET_REPO_PAGES_COUNT,
-    SYNCNOW
 }
 
 
