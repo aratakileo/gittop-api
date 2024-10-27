@@ -1,5 +1,5 @@
 /build
 /node_modules
-/src/data/sensitive
+/src/server/data/sensitive
 /.idea
-/src/data/cached
+/src/server/data/cached

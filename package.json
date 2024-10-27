@@ -2,13 +2,13 @@
   "name": "gittop-api",
   "version": "1.0.0",
   "description": "Easy to use API for getting information about the most popular repositories on GitHub",
-  "main": "src/index.ts",
+  "main": "src/server/index.ts",
   "scripts": {
-    "start:dev": "npx nodemon",
     "build": "rimraf ./build && tsc",
-    "start": "npm run build && node build/index.js -ucd=false -qdm=60",
-    "start:test_db": "npm run build && node build/index.js -qdm=1",
-    "start:test_github_request": "npm run build && node build/index.js -ucd=false -qdm=120"
+    "start_server": "npm run build && node build/server/index.js -ucd=false -qdm=60",
+    "start_server:test_db": "npm run build && node build/server/index.js -qdm=1",
+    "start_server:test_github_request": "npm run build && node build/server/index.js -ucd=false -qdm=120",
+    "start_client": "npm run build && node build/client/index.js"
   },
   "repository": {
     "type": "git",

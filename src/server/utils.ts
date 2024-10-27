@@ -33,7 +33,7 @@ export class RepositorySign {
     public constructor(repo_name_or_id: string) {
         const repo_id = parseInt(repo_name_or_id);
 
-        if (isNaN(repo_id)) {
+        if (isNaN(Number(repo_name_or_id))) {
             this.name = repo_name_or_id;
             this.id = null;
         } else {

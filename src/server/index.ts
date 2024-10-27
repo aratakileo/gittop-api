@@ -36,7 +36,7 @@ console.log('Has ran with config:', programConfig)
 
 const getRepositories = () => new Promise<Array<any>>((resolve, reject) => {
     if (existsSync(REPOSITORIES_CONTAINER_FILE_PATH) && programConfig.use_cached_data) {
-        // it is necessary to do not make unnecessary calls to the GitHub API during the debugging stage
+        // it is necessary to do not make unnecessary calls to the GitHub API during the debugging or development stage
         resolve(JSON.parse(readFileSync(REPOSITORIES_CONTAINER_FILE_PATH, 'utf8')));
         return;
     }
