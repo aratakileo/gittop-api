@@ -6,12 +6,11 @@ import {
     REPOS_ON_PAGE,
     REPOSITORIES_CONTAINER_FILE_PATH, ResponseCode, ResponseError
 } from "./constants";
-import https from "https";
 import {existsSync, readFileSync, writeFileSync} from "fs";
 import mysql from "mysql2";
 import {normalizeRepositoryObject, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
 import {ApiServer} from "./apiServer";
-import {fetchApi} from "../utils";
+import {fetchApi, mkdirSyncIfDoesNotExist} from "../utils";
 
 const getProgramConfig = () => {
     const config = {
@@ -45,7 +44,8 @@ const getRepositories = () => new Promise<Array<any>>((resolve, reject) => {
 
     fetchApi(GITHUB_REQUEST_OPTIONS).then(data => {
         let result = data.body.items;
-
+        
+        mkdirSyncIfDoesNotExist(REPOSITORIES_CONTAINER_FILE_PATH.slice(0, REPOSITORIES_CONTAINER_FILE_PATH.lastIndexOf('/')));
         writeFileSync(REPOSITORIES_CONTAINER_FILE_PATH, JSON.stringify(result));
 
         resolve(result);

@@ -3,3 +3,4 @@
 /src/server/data/sensitive
 /.idea
 /src/server/data/cached
+.DS_Store

@@ -1,4 +1,5 @@
 CREATE DATABASE IF NOT EXISTS popular_repositories;
+USE popular_repositories;
 
 CREATE TABLE IF NOT EXISTS owners (
     `id` integer PRIMARY KEY,

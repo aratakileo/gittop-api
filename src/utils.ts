@@ -1,5 +1,6 @@
 import https from "https";
 import http from "http";
+import { existsSync, mkdirSync } from "fs";
 
 export const fetchApi = (
     requestOptions: any,
@@ -24,3 +25,6 @@ export const fetchApi = (
     req.on('error', err => reject(err));
     req.end();
 });
+
+
+export const mkdirSyncIfDoesNotExist = (path: string) => {if (!existsSync(path)) mkdirSync(path);};

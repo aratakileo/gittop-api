@@ -1,13 +1,14 @@
 import {readFileAndGetOrThrow} from "./utils";
 
-const SENSITIVE_DIR = 'src/server/data/sensitive/';
-export const REPOSITORIES_CONTAINER_FILE_PATH = 'src/server/data/cached/repositories.json';
+export const SERVER_DATA_DIR = 'src/server/data/';
+const SENSITIVE_DIR = SERVER_DATA_DIR + 'sensitive/';
+export const REPOSITORIES_CONTAINER_FILE_PATH = `${SERVER_DATA_DIR}cached/repositories.json`;
 export const REPOS_ON_PAGE = 10;
 
 const GITHUB_CONFIG = {
     token: readFileAndGetOrThrow(
         SENSITIVE_DIR + 'github.token',
-        'expected file `src/server/data/sensitive/github.token` with inserted GitHub token there'
+        `expected file '${SENSITIVE_DIR}github.token' with inserted GitHub token there`
     ),
     endpoint: 'https://api.github.com/search/repositories',
     query: '?q=stars:>10000&sort=stars&order=desc'
@@ -27,15 +28,15 @@ export const GITHUB_REQUEST_OPTIONS = {
 export const DB_CONFIG = {
     host: readFileAndGetOrThrow(
         SENSITIVE_DIR + 'db.host',
-        'expected file `src/server/data/sensitive/db.host` with inserted database host there'
+        `expected file '${SENSITIVE_DIR}db.host' with inserted database host there`
     ),
     user: readFileAndGetOrThrow(
         SENSITIVE_DIR + 'db.username',
-        'expected file `src/server/data/sensitive/db.username` with inserted database username there'
+        `expected file '${SENSITIVE_DIR}db.username' with inserted database username there`
     ),
     password: readFileAndGetOrThrow(
         SENSITIVE_DIR + 'db.password',
-        'expected file `src/server/data/sensitive/db.password` with inserted database password there'
+        `expected file '${SENSITIVE_DIR}db.password' with inserted database password there`
     ),
     database: 'popular_repositories'
 } as const;
