@@ -1,8 +1,8 @@
 export enum RequestMethod {
-    GET,
-    POST,
-    PUT,
-    DELETE
+    GET = 'GET',
+    POST = 'POST',
+    PUT = 'PUT',
+    DELETE = 'DELETE'
 }
 
 export namespace RequestMethod {
