@@ -1,6 +1,25 @@
 export enum RequestMethod {
     GET,
-    POST
+    POST,
+    PUT,
+    DELETE
+}
+
+export namespace RequestMethod {
+    export const parse = (method: string): RequestMethod | undefined => {
+        switch (method.toLocaleLowerCase()) {
+            case 'get':
+                return RequestMethod.GET;
+            case 'post':
+                return RequestMethod.POST;
+            case 'put':
+                return RequestMethod.PUT;
+            case 'delete':
+                return RequestMethod.DELETE;
+            default:
+                return undefined;
+        }
+    };
 }
 
 const API_URL = 'http://localhost:3000'

@@ -26,7 +26,7 @@ class CliClient {
     public exec() {
         switch (this.arg) {
             case 'syncnow':
-                this.makeApiRequest('/v1/syncnow', data => console.log(data.body.message));
+                this.makeApiRequest('/v1/syncnow', data => console.log(data.body.message), RequestMethod.POST);
                 return;
             case 'get':
                 this.handleGet();

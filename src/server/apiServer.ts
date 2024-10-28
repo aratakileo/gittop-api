@@ -2,6 +2,7 @@ import http from "http";
 import {URL} from "url";
 import {RepositorySign} from "./utils";
 import {ApiCall, ResponseCode, ResponseError} from "./constants";
+import { RequestMethod } from "../cli-client/constants";
 
 
 enum ApiVersion {
@@ -23,7 +24,7 @@ class ServerRequestProcessor {
     readonly res: http.ServerResponse
     readonly url: URL
     readonly pathnameSegments: Array<string>
-    readonly params:  URLSearchParams
+    readonly method: RequestMethod | undefined
     readonly __apiCallProcessor: ApiCallProcessor
     __apiVersion: ApiVersion | null = null
 
@@ -36,13 +37,13 @@ class ServerRequestProcessor {
 
         this.url = new URL(req.url, `https://${req.headers.host}`);
         this.pathnameSegments = this.url.pathname.split('/').slice(1);
-        this.params = this.url.searchParams;
+        this.method = req.method === undefined ? undefined : RequestMethod.parse(req.method);
         this.__apiCallProcessor = callback;
     }
 
     get apiVersion() {
         if (this.__apiVersion === null)
-            throw Error('ApiVersion is null');
+            throw Error('apiVersion is null');
 
         return this.__apiVersion;
     }
@@ -65,16 +66,38 @@ class ServerRequestProcessor {
                 return;
         }
 
+        switch (this.method) {
+            case RequestMethod.GET:
+                this.handleGetMethod();
+                return;
+            case RequestMethod.POST:
+                this.handlePostMethod();
+                return;
+            default:
+                this.sendErrorMessage(ResponseError.INVALID, 'the requested method does not exist', ResponseCode.BAD_REQUEST);
+                return;
+        }
+    }
+
+    handleGetMethod() {
         switch (this.pathnameSegments[1]) {
             case 'repo':
                 this.handleRepositoryGet();
-                break;
+                return;
             case 'repos':
                 this.handleRepositoriesGet()
-                break;
+                return;
+            default:
+                this.sendRouteNodFoundMessage();
+                return;
+        }
+    }
+
+    handlePostMethod() {
+        switch (this.pathnameSegments[1]) {
             case 'syncnow':
                 this.handleSyncNow();
-                break;
+                return;
             default:
                 this.sendRouteNodFoundMessage();
                 return;
@@ -169,7 +192,8 @@ class ServerRequestProcessor {
     ) => {
         const body = {
             error: ResponseError[error],
-            description: description
+            description: description,
+            method: this.method
         };
 
         this.sendJsonResponse(body, code);
