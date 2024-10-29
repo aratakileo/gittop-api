@@ -2,7 +2,8 @@ export enum RequestMethod {
     GET = 'GET',
     POST = 'POST',
     PUT = 'PUT',
-    DELETE = 'DELETE'
+    DELETE = 'DELETE',
+    OPTIONS = 'OPTIONS'
 }
 
 export namespace RequestMethod {
@@ -16,6 +17,8 @@ export namespace RequestMethod {
                 return RequestMethod.PUT;
             case 'delete':
                 return RequestMethod.DELETE;
+            case 'options':
+                return RequestMethod.OPTIONS;
             default:
                 return undefined;
         }

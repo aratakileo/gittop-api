@@ -3,6 +3,7 @@ import {URL} from "url";
 import {RepositorySign} from "./utils";
 import {ApiCall, ResponseCode, ResponseError} from "./constants";
 import { RequestMethod } from "../cli-client/constants";
+import { Responser } from "./responseBuilder";
 
 
 enum ApiVersion {
@@ -26,6 +27,7 @@ class ServerRequestProcessor {
     readonly pathnameSegments: Array<string>
     readonly method: RequestMethod | undefined
     readonly __apiCallProcessor: ApiCallProcessor
+    readonly responser: Responser
     __apiVersion: ApiVersion | null = null
 
     public constructor(req: http.IncomingMessage, res: http.ServerResponse, callback: ApiCallProcessor) {
@@ -38,6 +40,7 @@ class ServerRequestProcessor {
         this.url = new URL(req.url, `https://${req.headers.host}`);
         this.pathnameSegments = this.url.pathname.split('/').slice(1);
         this.method = req.method === undefined ? undefined : RequestMethod.parse(req.method);
+        this.responser = new Responser(res);
         this.__apiCallProcessor = callback;
     }
 
@@ -50,7 +53,7 @@ class ServerRequestProcessor {
 
     public processRoute() {
         if (this.pathnameSegments.length < 2) {
-            this.sendRouteNodFoundMessage();
+            this.responser.sendRouteNotFoundError();
             return;
         }
 
@@ -62,9 +65,11 @@ class ServerRequestProcessor {
                 this.__apiVersion = ApiVersion.V2;
                 break;
             default:
-                this.sendRouteNodFoundMessage(`requested invalid api version '${this.pathnameSegments[0]}'`);
+                this.responser.sendRouteNotFoundError(`requested invalid api version '${this.pathnameSegments[0]}'`);
                 return;
         }
+
+        console.log(this.req.method, this.pathnameSegments);
 
         switch (this.method) {
             case RequestMethod.GET:
@@ -72,6 +77,9 @@ class ServerRequestProcessor {
                 return;
             case RequestMethod.POST:
                 this.handlePostMethod();
+                return;
+            case RequestMethod.OPTIONS:
+                this.responser.makeHeadEmpty().removeBody().send();
                 return;
             default:
                 this.sendErrorMessage(ResponseError.INVALID, 'the requested method does not exist', ResponseCode.BAD_REQUEST);
@@ -88,7 +96,7 @@ class ServerRequestProcessor {
                 this.handleRepositoriesGet()
                 return;
             default:
-                this.sendRouteNodFoundMessage();
+                this.responser.sendRouteNotFoundError();
                 return;
         }
     }
@@ -99,14 +107,14 @@ class ServerRequestProcessor {
                 this.handleSyncNow();
                 return;
             default:
-                this.sendRouteNodFoundMessage();
+                this.responser.sendRouteNotFoundError();
                 return;
         }
     }
 
     handleRepositoryGet() {
         if (this.pathnameSegments.length < 3 || this.pathnameSegments[2] == '') {
-            this.sendRouteNodFoundMessage('expected repository name or id');
+            this.responser.sendRouteNotFoundError('expected repository name or id');
             return;
         }
 
@@ -128,7 +136,7 @@ class ServerRequestProcessor {
         }
 
         if (this.pathnameSegments.length < 3 || !['page', 'pages'].includes(this.pathnameSegments[2])) {
-            this.sendRouteNodFoundMessage();
+            this.responser.sendRouteNotFoundError();
             return;
         }
 
@@ -177,32 +185,17 @@ class ServerRequestProcessor {
         this.__apiCallProcessor(apiCall, data, this.sendJsonResponse, this.sendErrorMessage);
     }
 
-    sendRouteNodFoundMessage = (description: string = 'the requested route does not exist') => {
-        this.sendErrorMessage(
-            ResponseError.NOT_FOUND,
-            description,
-            ResponseCode.NOT_FOUND
-        );
-    }
-
     sendErrorMessage = (
         error: ResponseError,
         description: string,
         code: ResponseCode
     ) => {
-        const body = {
-            error: ResponseError[error],
-            description: description,
-            method: this.method
-        };
-
-        this.sendJsonResponse(body, code);
-    }
+        this.responser.setErrorBody(error, description).setCode(code).send();
+    };
 
     sendJsonResponse = (body: any, code = ResponseCode.OK) => {
-        this.res.writeHead(code, { 'Content-Type': 'application/json' });
-        this.res.end(JSON.stringify(body));
-    }
+        this.responser.setJsonBody(body).setCode(code).send();
+    };
 }
 
 

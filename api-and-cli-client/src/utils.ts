@@ -28,3 +28,7 @@ export const fetchApi = (
 
 
 export const mkdirSyncIfDoesNotExist = (path: string) => {if (!existsSync(path)) mkdirSync(path);};
+
+export const nullOrUndefined = (obj: any) => {
+    return obj === null || obj === undefined;
+};

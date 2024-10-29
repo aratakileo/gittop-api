@@ -48,7 +48,8 @@ export enum ResponseCode {
     OK = 200,
     BAD_REQUEST = 400,
     NOT_FOUND = 404,
-    INTERNAL_ERROR = 500
+    INTERNAL_ERROR = 500,
+    NO_CONTENT = 204
 }
 
 
@@ -66,3 +67,13 @@ export enum ApiCall {
     GET_REPO_PAGES_COUNT,
     SYNCNOW
 }
+
+export const DEFAULT_RESPONSE_HEAD = {
+    'Access-Control-Allow-Origin': '*',
+    'Access-Control-Allow-Methods': 'OPTIONS, POST, GET',
+    'Access-Control-Max-Age': 2592000
+} as const;
+
+export const normalizeResponseHead = (head: any) => {
+    return {...DEFAULT_RESPONSE_HEAD, ...head} as const;
+};
