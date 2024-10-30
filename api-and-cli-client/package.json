@@ -5,9 +5,10 @@
   "main": "src/server/index.ts",
   "scripts": {
     "build": "rimraf ./build && tsc",
-    "start_server": "npm run build && node build/server/index.js -ucd=false -qdm=60",
-    "start_server:test_db": "npm run build && node build/server/index.js -qdm=1",
-    "start_server:test_github_request": "npm run build && node build/server/index.js -ucd=false -qdm=120",
+    "start_server": "npm run build && node build/server/index.js -use-cached-data=no -request-delay-in-minutes=60",
+    "start_server:test_db": "npm run build && node build/server/index.js -request-delay-in-minutes=1",
+    "start_server:test_db_no_requests": "npm run build && node build/server/index.js -send-requests=no",
+    "start_server:test_github_request": "npm run build && node build/server/index.js -use-cached-data=no -request-delay-in-minutes=120",
     "start_cli_client:sync_now": "npm run build && node build/cli-client/index.js syncnow",
     "start_cli_client:get_gitignore_repo": "npm run build && node build/cli-client/index.js get repo gitignore",
     "start_cli_client:get_linux_repo": "npm run build && node build/cli-client/index.js get repo linux",

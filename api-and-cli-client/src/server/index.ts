@@ -8,27 +8,25 @@ import {
 } from "./constants";
 import {existsSync, readFileSync, writeFileSync} from "fs";
 import mysql from "mysql2";
-import {normalizeRepositoryObject, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
+import {getValueOrDefault, normalizeRepositoryObject, parseSysArgFlags, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
 import {ApiServer} from "./apiServer";
 import {fetchApi, mkdirSyncIfDoesNotExist} from "../utils";
 
 const getProgramConfig = () => {
-    const config = {
-        request_delay_in_minutes: 10,
-        use_cached_data: true
-    }
-
-    const programArgs = process.argv.slice(2);
-
-    programArgs.forEach(arg => {
-        if (arg.startsWith('-qdm='))
-            config.request_delay_in_minutes = Number(arg.slice(5));
-        else if (arg.startsWith('-ucd=') && (arg.endsWith('false') || arg.endsWith('true')))
-            config.use_cached_data = arg.slice(5) != 'false';
-        else throw Error('invalid argument ' + arg);
+    const flagsResult = parseSysArgFlags({
+        'request-delay-in-minutes': 'int',
+        'use-cached-data': 'bool',
+        'send-requests': 'bool'
     });
 
-    return Object.freeze(config);
+    if (!flagsResult.is_ok)
+        throw flagsResult.err;
+
+    return {
+        request_delay_in_minutes: getValueOrDefault(flagsResult.val, 'request-delay-in-minutes', 10),
+        use_cached_data: getValueOrDefault(flagsResult.val, 'use-cached-data', true),
+        send_requests: getValueOrDefault(flagsResult.val, 'send-requests', true)
+    } as const;
 };
 
 const programConfig = getProgramConfig();
@@ -94,6 +92,11 @@ const collectData = async () => {
 let intervalDataSyncer: NodeJS.Timeout | null = null;
 
 const runIntervalDataSyncer = (force = false) => {
+    if (!programConfig.send_requests) {
+        collectData();
+        return;
+    }
+
     if (intervalDataSyncer !== null && force) {
         clearInterval(intervalDataSyncer);
         intervalDataSyncer = null;
