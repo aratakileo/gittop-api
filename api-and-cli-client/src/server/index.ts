@@ -123,6 +123,7 @@ const getRepos = (page: number) => new Promise<any>((resolve, reject) => {
 
         // @ts-ignore
         resolve(result.map(row => normalizeRepositoryObject(row)));
+        pool.end();
     });
 });
 
@@ -140,6 +141,7 @@ const getRepoPages = () => new Promise<any>((resolve, reject) => {
             // @ts-ignore
             'pages': result[0].count % REPOS_ON_PAGE + Math.trunc(result[0].count / REPOS_ON_PAGE)
         });
+        pool.end();
     });
 });
 
@@ -157,6 +159,7 @@ const getRepo = (repoSign: RepositorySign) => new Promise<any>((resolve, reject)
 
         // @ts-ignore
         resolve(normalizeRepositoryObject(result[0]));
+        pool.end();
     });
 });
 
