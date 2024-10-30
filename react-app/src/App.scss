@@ -1,0 +1,131 @@
+@mixin set-size($size) {
+  width: $size;
+  height: $size;
+}
+
+@mixin add-icon($image, $size, $color, $spacing: 0px, $where: after) {
+  &:#{$where} {
+    @if $where == after {
+      margin-left: $spacing;
+    } @else {
+      margin-right: $spacing;
+    }
+
+    @include set-size($size);
+
+    background-color: $color;
+    mask-image: $image;
+    mask-repeat: no-repeat;
+    mask-size: $size $size;
+    display: inline-block;
+    content: '';
+  }
+}
+
+@mixin add-hover-bg-animation($hover-color) {
+  border-radius: 4px;
+  transition: 0.3s ease-in-out;
+  box-sizing: border-box;
+  padding: 8px;
+
+  &:hover {
+    background-color: $hover-color;
+  }
+}
+
+@mixin make-borderless-btn($color, $hover-color) {
+  @include add-hover-bg-animation($hover-color);
+
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  border: none;
+  color: $color;
+  background: none;
+}
+
+@mixin make-bordered-btn($color, $hover-color) {
+  @include make-borderless-btn($color, $hover-color);
+  border: 1px solid $color;
+}
+
+.repo-card {
+  .header {
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .stars {
+    @include add-icon(url('icons/star.svg'), 1rem, #FFB90C, 0.2rem);
+    margin-left: 2rem;
+  }
+}
+
+.repos-container {
+  width: 100%;
+  height: max-content;
+  margin-bottom: 0.5em;
+}
+
+.center {
+  @mixin vertical() {
+    flex-wrap: wrap;
+    align-content: center;
+  }
+
+  @mixin horizontal() {
+    display: flex;
+    justify-content: center;
+  }
+
+  &:not(:is(.vertical, .horizontal)) {
+    @include vertical();
+    @include horizontal();
+  }
+
+  &.vertical {
+    @include vertical();
+  }
+
+  &.horizontal {
+    @include horizontal();
+  }
+}
+
+.invisible {
+  visibility: hidden;
+  transition: none !important;
+}
+
+.page-container {
+  flex-direction: column;
+  margin-left: 25px;
+  margin-right: 25px;
+}
+
+.next-btn {
+  @include make-borderless-btn(#000, #00000035);
+  @include add-icon(url('icons/forward.svg'), 0.9rem, #000, 0.2rem);
+  background: none;
+  font-size: 1rem;
+}
+
+.prev-btn {
+  @include make-borderless-btn(#000, #00000035);
+  @include add-icon(url('icons/back.svg'), 0.9rem, #000, 0.2rem, before);
+  font-size: 1rem;
+}
+
+.bg-hover-animation {
+  @include add-hover-bg-animation(#00000035);
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+  margin: 0;
+}
+
+.emoji {
+  @include set-size(1em);
+}
