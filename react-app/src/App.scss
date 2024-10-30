@@ -1,9 +1,14 @@
-@mixin set-size($size) {
+:root {
+  --default-content-color: #000;
+  --default-content-hover-color: #00000035;
+}
+
+@mixin set-square-size($size) {
   width: $size;
   height: $size;
 }
 
-@mixin add-icon($image, $size, $color, $spacing: 0px, $where: after) {
+@mixin add-icon($image, $size, $color: var(--default-content-color), $spacing: 0px, $where: after) {
   &:#{$where} {
     @if $where == after {
       margin-left: $spacing;
@@ -11,7 +16,7 @@
       margin-right: $spacing;
     }
 
-    @include set-size($size);
+    @include set-square-size($size);
 
     background-color: $color;
     mask-image: $image;
@@ -22,18 +27,32 @@
   }
 }
 
-@mixin add-hover-bg-animation($hover-color) {
+@mixin set-universal-hover() {
+  @media (hover: hover) {
+    &:hover {
+      @content;
+    }
+  }
+
+  @media (hover: none) {
+    &:active {
+      @content;
+    }
+  }
+}
+
+@mixin add-hover-bg-animation($hover-color: var(--default-content-hover-color)) {
   border-radius: 4px;
   transition: 0.3s ease-in-out;
   box-sizing: border-box;
   padding: 8px;
 
-  &:hover {
+  @include set-universal-hover {
     background-color: $hover-color;
   }
 }
 
-@mixin make-borderless-btn($color, $hover-color) {
+@mixin make-borderless-btn($color: var(--default-content-color), $hover-color: var(--default-content-hover-color)) {
   @include add-hover-bg-animation($hover-color);
 
   align-items: center;
@@ -44,7 +63,7 @@
   background: none;
 }
 
-@mixin make-bordered-btn($color, $hover-color) {
+@mixin make-bordered-btn($color: var(--default-content-color), $hover-color: var(--default-content-hover-color)) {
   @include make-borderless-btn($color, $hover-color);
   border: 1px solid $color;
 }
@@ -58,6 +77,7 @@
   .stars {
     @include add-icon(url('icons/star.svg'), 1rem, #FFB90C, 0.2rem);
     margin-left: 2rem;
+    display: flex;
   }
 }
 
@@ -104,20 +124,19 @@
 }
 
 .next-btn {
-  @include make-borderless-btn(#000, #00000035);
-  @include add-icon(url('icons/forward.svg'), 0.9rem, #000, 0.2rem);
-  background: none;
+  @include make-borderless-btn();
+  @include add-icon(url('icons/forward.svg'), 0.9rem, var(--default-content-color), 0.2rem);
   font-size: 1rem;
 }
 
 .prev-btn {
-  @include make-borderless-btn(#000, #00000035);
-  @include add-icon(url('icons/back.svg'), 0.9rem, #000, 0.2rem, before);
+  @include make-borderless-btn();
+  @include add-icon(url('icons/back.svg'), 0.9rem, var(--default-content-color), 0.2rem, before);
   font-size: 1rem;
 }
 
 .bg-hover-animation {
-  @include add-hover-bg-animation(#00000035);
+  @include add-hover-bg-animation();
 }
 
 ul {
@@ -127,5 +146,5 @@ ul {
 }
 
 .emoji {
-  @include set-size(1em);
+  @include set-square-size(1em);
 }
