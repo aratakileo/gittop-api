@@ -69,8 +69,6 @@ class ServerRequestProcessor {
                 return;
         }
 
-        console.log(this.req.method, this.pathnameSegments);
-
         switch (this.method) {
             case RequestMethod.GET:
                 this.handleGetMethod();

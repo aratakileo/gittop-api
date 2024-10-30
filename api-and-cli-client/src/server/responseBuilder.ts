@@ -56,8 +56,6 @@ export class Responser {
     }
 
     public send() {
-        console.log('hey send with body: ', this.responseBody);
-
         this.response.writeHead(this.code, normalizeResponseHead(this.head));
 
         if (nullOrUndefined(this.responseBody))
