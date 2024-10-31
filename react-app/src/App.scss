@@ -148,3 +148,7 @@ ul {
 .emoji {
   @include set-square-size(1em);
 }
+
+a {
+  color: var(--default-content-color);
+}

@@ -2,7 +2,7 @@ import './App.scss';
 import { getApiUrlTo } from './utils/constants';
 import { RepoCard } from './components/repo-card';
 import React, { useState, useEffect } from 'react';
-import { parseDescription, setVisibility } from './utils/utils';
+import { setVisibility } from './utils/utils';
 
 const defaultApiRequestParams = {
   method: 'GET',
@@ -49,9 +49,6 @@ function App() {
     await fetch(getApiUrlTo('/v2/repos/page/' + page), defaultApiRequestParams)
     .then(response => response.json())
     .then(async body => {
-      for (let repo of body.repos)
-        repo.description = await parseDescription(repo.description);
-
       bufferedPages[page] = body.repos;
       setRepos(body.repos);
     })
@@ -79,8 +76,10 @@ function App() {
     console.error(error);
   }
 
-  if (error)
-    body = (<div>Oh no, something went wrong: {error.toString()}</div>);
+  if (error) {
+    body = (<div>Oops, something went wrong... Try to reload page</div>);
+    console.error(error);
+  }
   else if (!isLoading)
     body = repos.map(repo => <ul key={repo.owner.username + repo.name}>{RepoCard({repo})}</ul>);
 

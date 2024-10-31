@@ -1,4 +1,5 @@
 import { formatedNumericValue, } from "../utils/utils";
+import { InteractableText } from "./interactable-text";
 
 export const RepoCard = ({repo}) => {
     const repoPath = repo.owner.username + '/' + repo.name;
@@ -11,6 +12,6 @@ export const RepoCard = ({repo}) => {
             </b>
             <div className="stars">{formatedNumericValue(repo.stars)}</div>
         </div>
-        <p>{repo.description}</p>
+        <InteractableText text={repo.description}/>
     </div>)
 };
