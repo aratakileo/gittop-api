@@ -1,4 +1,4 @@
-import { noSkipFindAll } from "../utils/regex";
+import { noSkipFindAllNamedGroups } from "../utils/regex";
 import { nullOrUndefined as isNullOrUndefined } from "../utils/utils";
 import { useState, useEffect } from 'react';
 
@@ -24,7 +24,7 @@ const parserRegex = /(?<emoji>:([a-zA-Z0-9_]+):)|(?<url>(http(s)?:\/\/.)?(www\.)
 const parseText = async (text, emojiClassName) => {
     const newText = [];
 
-    for (let match of noSkipFindAll(parserRegex, text)) {
+    for (let match of noSkipFindAllNamedGroups(parserRegex, text)) {
         if (match.group === 'emoji') {
             let emoji = await getEmoji(match.groups[1]);
 

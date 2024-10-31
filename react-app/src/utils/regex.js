@@ -1,4 +1,4 @@
-export const findAll = (regex, text) => {
+export const findAllNamedGroups = (regex, text) => {
     const groups = [];
 
     for (let match of text.matchAll(regex)) {
@@ -34,14 +34,14 @@ export const findAll = (regex, text) => {
     return groups;
 };
 
-export const noSkipFindAll = (regex, text, notDefinedGroupName='other') => {
+export const noSkipFindAllNamedGroups = (regex, text, notDefinedGroupName='other') => {
     /*
-    * Unlike the findall implementation, there are no skipped substrings in this implementation. 
+    * Unlike the findAllNamedGroups implementation, there are no skipped substrings in this implementation. 
     * Anything that was not found using the specified regular expression will be declared as found, 
     * under the group name specified in the `notDefinedGroupName` variable
     */
 
-    const matches = findAll(regex, text);
+    const matches = findAllNamedGroups(regex, text);
 
     if (matches.length === 0)
         return [{
