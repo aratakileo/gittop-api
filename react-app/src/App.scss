@@ -65,20 +65,30 @@
   background: none;
 }
 
-@mixin make-bordered-btn($color: var(--default-content-color), $hover-color: var(--default-content-hover-color)) {
-  @include make-borderless-btn($color, $hover-color);
+@mixin add-solid-border($color: var(--default-content-color), $thickness: 1px) {
   border: 1px solid $color;
 }
 
+@mixin make-bordered-btn($color: var(--default-content-color), $hover-color: var(--default-content-hover-color)) {
+  @include make-borderless-btn($color, $hover-color);
+  @include add-solid-border($color);
+}
+
 .repo-card {
-  .header {
+  .name-container {
     display: flex;
-    justify-content: space-between;
+  }
+
+  .lang-name {
+    @include add-solid-border();
+    border-radius: 4px;
+    padding: 1px;
+    margin-left: 0.4em;
   }
 
   .stars {
     @include add-icon(url('icons/star.svg'), 1rem, #FFB90C, 0.2rem);
-    margin-left: 2rem;
+    margin-left: 0.4em;
     display: flex;
   }
 }

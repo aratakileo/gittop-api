@@ -35,7 +35,7 @@ function App() {
       setPage(page - 1);
   };
 
-  const updateState = () => {
+  const updatePaginationControls = () => {
     setHasPrevPage(page > 0);
     setHasNextPage(page < totalPages - 1);
   };
@@ -48,7 +48,7 @@ function App() {
 
     if (page in bufferedPages) {
       setRepos(bufferedPages[page]);
-      updateState();
+      updatePaginationControls();
       return;
     }
 
@@ -69,7 +69,7 @@ function App() {
     })
     .catch(setError);
 
-    updateState();
+    updatePaginationControls();
   
     setIsLoading(false);
   };

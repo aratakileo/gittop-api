@@ -2,15 +2,14 @@ import { formatedNumericValue, } from "../utils/utils";
 import { InteractableText } from "./interactable-text";
 
 export const RepoCard = ({repo}) => {
-    const repoPath = repo.owner.username + '/' + repo.name;
+    const repoName = `${repo.owner.username}/${repo.name}`;
 
     return (
     <div className='repo-card bg-hover-animation' onClick={() => window.location.href = repo.url}>
-        <div className='header'>
-            <b>
-                <p className='name'>{repoPath}</p>
-            </b>
-            <div className="stars">{formatedNumericValue(repo.stars)}</div>
+        <div className='name-container center vertical'>
+            <b><p className='name'>{repoName}</p></b>
+            <p className='stars'>{formatedNumericValue(repo.stars)}</p>
+            {repo.lang ? <p className='lang-name'>{repo.lang}</p> : ''}
         </div>
         <InteractableText text={repo.description}/>
     </div>)
