@@ -164,8 +164,8 @@ const getRepo = (repoSign: RepositorySign) => new Promise<any>((resolve, reject)
 });
 
 const server = new ApiServer(async (apiCall, data, resolve, reject) => {
-    const processPromise = (promise: Promise<any>, then: (result: any) => void) => promise.then(then).catch(reason => {
-        // WARNING: never return error message as response due to it may have sensitive information
+    const promiseResponse = (promise: Promise<any>, then: (result: any) => void) => promise.then(then).catch(reason => {
+        // WARNING: never return error message (or error details) as response due to it may have sensitive information
         reject(
             ResponseError.INTERNAL_ERROR,
             'oops, something went wrong...',
@@ -177,13 +177,14 @@ const server = new ApiServer(async (apiCall, data, resolve, reject) => {
 
     switch (apiCall) {
         case ApiCall.SYNCNOW:
+            console.log('SYNCNOW method has been called');
             runIntervalDataSyncer(true);
             resolve({
                 'message': 'Successfully synced just now'
             });
             return;
         case ApiCall.GET_REPOS:
-            await processPromise(getRepos(data.page), repos => {
+            await promiseResponse(getRepos(data.page), repos => {
                 if (repos.length == 0) {
                     reject(
                         ResponseError.INVALID,
@@ -200,10 +201,10 @@ const server = new ApiServer(async (apiCall, data, resolve, reject) => {
             });
             return;
         case ApiCall.GET_REPO_PAGES_COUNT:
-            await processPromise(getRepoPages(), result => resolve(result));
+            await promiseResponse(getRepoPages(), result => resolve(result));
             return;
         case ApiCall.GET_REPO:
-            await processPromise(getRepo(data), repo => {
+            await promiseResponse(getRepo(data), repo => {
                 if (repo) {
                     resolve(repo);
                     return;

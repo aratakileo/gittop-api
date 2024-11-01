@@ -12,7 +12,7 @@ const describeRepo = (data: any) => {
     output += `\nlink: ${data.url}\nabout: ${data.description}`;
 
     return output;
-}
+};
 
 
 class CliClient {
