@@ -57,6 +57,8 @@
 
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
+  align-content: center;
   font-weight: bold;
   border: none;
   color: $color;
@@ -125,13 +127,18 @@
 
 .next-btn {
   @include make-borderless-btn();
-  @include add-icon(url('icons/forward.svg'), 0.9rem, var(--default-content-color), 0.2rem);
+  @include add-icon(url('icons/forward.svg'), 0.9rem, $spacing: 0.2rem);
   font-size: 1rem;
 }
 
 .prev-btn {
   @include make-borderless-btn();
-  @include add-icon(url('icons/back.svg'), 0.9rem, var(--default-content-color), 0.2rem, before);
+  @include add-icon(url('icons/back.svg'), 0.9rem, $spacing: 0.2rem, $where: before);
+  font-size: 1rem;
+}
+
+.syncnow-btn {
+  @include make-borderless-btn();
   font-size: 1rem;
 }
 

@@ -1,7 +1,13 @@
-export const findAllNamedGroups = (regex, text) => {
-    const groups = [];
+import { isEmpty } from "./utils";
 
-    for (let match of text.matchAll(regex)) {
+export const matchAllNamedGroups = (regex, text) => {
+    const groups = [];
+    const matches = text.matchAll(regex);
+
+    for (let match of matches) {
+        if (isEmpty(match.groups))
+            throw Error(`regex ${regex} has no named groups`);
+
         let currentMatchStart = match.index;
 
         for (let groupName in match.groups) {
@@ -34,14 +40,14 @@ export const findAllNamedGroups = (regex, text) => {
     return groups;
 };
 
-export const noSkipFindAllNamedGroups = (regex, text, notDefinedGroupName='other') => {
+export const matchAllNamedGroupsNoSkip = (regex, text, notDefinedGroupName='other') => {
     /*
     * Unlike the findAllNamedGroups implementation, there are no skipped substrings in this implementation. 
     * Anything that was not found using the specified regular expression will be declared as found, 
     * under the group name specified in the `notDefinedGroupName` variable
     */
 
-    const matches = findAllNamedGroups(regex, text);
+    const matches = matchAllNamedGroups(regex, text);
 
     if (matches.length === 0)
         return [{
