@@ -14,6 +14,18 @@ const describeRepo = (data: any) => {
     return output;
 };
 
+const stringifyQueryParams = (params: any) => {
+    if (params === null)
+        return '';
+
+    let result = '?';
+
+    if ('langs' in params && params.langs.length !== 0)
+        result += `langs=${encodeURIComponent(JSON.stringify(params.langs))}&`;
+
+    return result + `order=${params.order}`;
+};
+
 
 class CliClient {
     private argIndex = 0;
@@ -38,18 +50,37 @@ class CliClient {
     }
 
     private parseFilters() {
-        if (!this.next())
-            return Result.ok({langs: []});
+        let langs: string[] = [];
+        let order = 'DESC';
 
-        if (!this.arg?.startsWith('langs='))
-            return Result.err(`invalid filter argument '${this.arg}'`);
+        while (this.next()) {
+            if (this.arg === undefined)
+                throw Error('arg is undefined');
 
-        const filterValue = this.arg.slice('langs='.length);
+            let filterName = this.arg.slice(0, this.arg.indexOf('='));
 
-        if (filterValue.length === 0)
-            return Result.err(`'langs' filter argument value is empty`);
+            const filterValue = this.arg.slice(filterName.length + 1);
 
-        return Result.ok({langs: filterValue.split(',')});
+            if (filterValue.length === 0)
+                return Result.err(`'${filterName}' filter argument value is empty`);
+
+            switch (filterName) {
+                case 'langs':
+                    langs = filterValue.split(',');
+                    break;
+                case 'order':
+                    if (!['asc', 'desc'].includes(filterValue.toLowerCase()))
+                        return Result.err(`expected 'ASC' or 'DESC', but got '${filterValue}' for filter '${filterName}'`);
+
+                    order = filterValue.toUpperCase();
+
+                    break;
+                default:
+                    return Result.err(`invalid filter argument '${this.arg}'`);
+            }
+        }
+
+        return Result.ok({langs, order});
     }
 
     private async handleGet() {
@@ -107,7 +138,8 @@ class CliClient {
                     return;
                 }
 
-                if (langs) console.log(`Only for languages: ${langs.join(', ')}\n`);
+                console.log(`For languages: ${langs.join(', ')}`);
+                console.log(`${reposFilterResult.val?.order.toLowerCase() === 'asc' ? 'Ascending' : 'Descending'} order\n`);
 
                 this.makeApiRequest('/v2/repos/page/' + pageNum, data => {
                     // @ts-ignore
@@ -129,18 +161,14 @@ class CliClient {
         then: ((value: any) => void) | null = null,
         queryParams: any = null,
         method = RequestMethod.GET
-    ) => {
-        const query = queryParams === null && 'langs' in queryParams ? '' : `?langs=${JSON.stringify(queryParams.langs)}`;
-
-        return fetchApi(
-            getRequestOptions(endpoint + query, method),
-            false
-        ).then(data => {
-            if (data.status === 500 || data.status === undefined)
-                console.error('API returned invalid response:', data);
-            else if (then !== null) then(data);
-        }).catch(console.error);
-    };
+    ) => fetchApi(
+        getRequestOptions(endpoint + stringifyQueryParams(queryParams), method),
+        false
+    ).then(data => {
+        if (data.status === 500 || data.status === undefined)
+            console.error('API returned invalid response:', data);
+        else if (then !== null) then(data);
+    }).catch(console.error);
 
     private next() {
         this.argIndex++;
