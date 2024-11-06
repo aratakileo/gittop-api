@@ -25,7 +25,7 @@ export namespace RequestMethod {
     };
 }
 
-const API_URL = 'http://localhost:3000'
+const API_URL = 'http://localhost:3000';
 
 export const getRequestOptions = (pathname: string, method = RequestMethod.GET) => {
     const url = new URL(API_URL + pathname);
@@ -34,7 +34,7 @@ export const getRequestOptions = (pathname: string, method = RequestMethod.GET) 
         hostname: url.hostname,
         port: url.port,
         method: RequestMethod[method],
-        path: url.pathname,
+        path: `${url.pathname}?${url.searchParams}`,
         headers: {
             'Content-Type': 'application/json'
         }

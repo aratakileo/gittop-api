@@ -14,6 +14,7 @@
     "start_cli_client:get_linux_repo": "npm run build && node build/cli-client/index.js get repo linux",
     "start_cli_client:get_invalid_repo": "npm run build && node build/cli-client/index.js get repo invalid",
     "start_cli_client:get_repos_second_page": "npm run build && node build/cli-client/index.js get repos 1",
+    "start_cli_client:get_js_ts_repos_first_page": "npm run build && node build/cli-client/index.js get repos 0 langs=typescript,javascript",
     "start_cli_client:get_repos_out_of_bounds_page": "npm run build && node build/cli-client/index.js get repos 999"
   },
   "repository": {

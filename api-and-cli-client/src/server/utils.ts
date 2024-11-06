@@ -1,4 +1,5 @@
 import {PathLike, readFileSync} from "fs";
+import {Result} from '../utils';
 
 export const readFileAndGetOrThrow = (filePath: PathLike, err_message: string) => {
     try {
@@ -49,16 +50,6 @@ export class RepositorySign {
     public toString() {
         return 'repository with ' + (this.isById ? `id '${this.id}'` : `name '${this.name}'`);
     }
-}
-
-export type Result<T, E = Error> =
-| { is_ok: true; val: T }
-| { is_ok: false; err: E };
-
-export namespace Result {
-    export const ok = <T>(val: T): Result<T, null> => ({is_ok: true, val});
-    export const err = <E = Error>(err: E): Result<null, E> => ({is_ok: false, err});
-    export const errOf = (err: string): Result<null, Error> => ({is_ok: false, err: Error(err)});
 }
 
 export const parseSysArgFlags = (expectedFlags: any) => {
