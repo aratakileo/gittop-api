@@ -194,10 +194,11 @@ const server = new ApiServer(async (apiCall, data, resolve, reject) => {
                     return;
                 }
 
-                resolve({
+                promiseResponse(getRepoPages(), pagesData => resolve({
                     repos: repos,
-                    page: data.page
-                });
+                    page: data.page,
+                    pages: pagesData.pages
+                }));
             });
             return;
         case ApiCall.GET_REPO_PAGES_COUNT:

@@ -59,12 +59,6 @@ function App() {
     .then(body => {
       bufferedPages[page] = body.repos;
       setRepos(body.repos);
-    })
-    .catch(setError);
-
-    await fetch(getApiUrlTo('/v2/repos/pages'), getDefaultApiRequestParams())
-    .then(res => res.json())
-    .then(body => {
       setTotalPages(body.pages);
     })
     .catch(setError);
