@@ -135,7 +135,7 @@ function App() {
       <ToastContainer/>
       <div className='page-container'>
       <h1>The most popular GitHub repositories</h1>
-      {languageOptions.map(lang => <LanguageOption lang={lang} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)}
+      Languages: {languageOptions.map(lang => <LanguageOption lang={lang} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)}
       <div className='repos-container'>
           {body}
       </div>
