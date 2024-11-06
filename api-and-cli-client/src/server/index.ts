@@ -111,10 +111,10 @@ const runIntervalDataSyncer = (force = false) => {
 
 runIntervalDataSyncer();
 
-const getRepos = (page: number, langs: string[]) => new Promise<any>((resolve, reject) => {
+const getRepos = (page: number, langs: string[], order: string) => new Promise<any>((resolve, reject) => {
     const pool = mysql.createPool(DB_CONFIG);
     const subQueryData = getNamedFilterSubQuery('lang', langs);
-    const repos_query = `SELECT *, (select username from owners where owners.id = owner_id) as owner_username FROM repositories WHERE ${subQueryData.query} limit ?, ?;`;
+    const repos_query = `SELECT *, (select username from owners where owners.id = owner_id) as owner_username FROM repositories WHERE ${subQueryData.query} order by stars ${order} limit ?, ?;`;
 
     pool.query(repos_query, [...subQueryData.values, page * REPOS_ON_PAGE, REPOS_ON_PAGE], (err, result) => {
         if (err) {
@@ -194,7 +194,7 @@ const server = new ApiServer(async (apiCall, data, resolve, reject) => {
             });
             return;
         case ApiCall.GET_REPOS:
-            await promiseResponse(getRepos(data.page, data.langs), repos => {
+            await promiseResponse(getRepos(data.page, data.langs, data.order), repos => {
                 if (repos.length === 0 && data.page !== 0) {
                     reject(
                         ResponseError.INVALID,

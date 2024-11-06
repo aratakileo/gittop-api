@@ -149,7 +149,7 @@ class ServerRequestProcessor {
                 if (!Array.isArray(langsFilter) || langsFilter.some(lang => typeof lang !== 'string'))
                     throw Error();
             } catch {
-                this.sendErrorMessage(ResponseError.INVALID, 'expected string[] for langs query parameter', ResponseCode.BAD_REQUEST);
+                this.sendErrorMessage(ResponseError.INVALID, `expected string[] for 'langs' query parameter`, ResponseCode.BAD_REQUEST);
                 return;
             }
 
@@ -187,7 +187,21 @@ class ServerRequestProcessor {
             return;
         }
 
-        this.processApiCall(ApiCall.GET_REPOS, {page: pageNum, langs: langsFilter});
+        let order = 'desc';
+
+        if (this.params.has('order'))
+        {
+            const _order = this.params.get('order');
+
+            if (typeof _order !== 'string' || !['asc', 'desc'].includes(_order.toLowerCase())) {
+                this.sendErrorMessage(ResponseError.INVALID, `expected 'ASC' or 'DESC' for 'order' query parameter, but got '${_order}'`, ResponseCode.BAD_REQUEST);
+                return;
+            }
+            
+            order = _order;
+        }
+
+        this.processApiCall(ApiCall.GET_REPOS, {page: pageNum, langs: langsFilter, order});
     }
 
     handleSyncNow() {
