@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { applyVisibility } from './utils/utils';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { LanguageOption } from './components/language-option';
 
 const getDefaultApiRequestParams = (method = 'GET') => ({
   method,
@@ -12,6 +13,8 @@ const getDefaultApiRequestParams = (method = 'GET') => ({
     'Accept': 'aplication/json'
   }
 });
+
+const filteredLanguages = [];
 
 var bufferedPages = {};
 var syncnowCooldown = false;
@@ -22,6 +25,7 @@ function App() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
+  const [languageOptions, setLanguageOptions] = useState([]);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
 
@@ -53,12 +57,18 @@ function App() {
     }
 
     setIsLoading(true);
+
+    await fetch(getApiUrlTo('/v2/repos/pages', getDefaultApiRequestParams()))
+    .then(res => res.json())
+    .then(body => setLanguageOptions(body.langs))
+    .catch(setError);
   
-    await fetch(getApiUrlTo('/v2/repos/page/' + page), getDefaultApiRequestParams())
+    await fetch(getApiUrlTo(`/v2/repos/page/${page}?langs=${encodeURIComponent(JSON.stringify(filteredLanguages))}`), getDefaultApiRequestParams())
     .then(res => res.json())
     .then(body => {
       bufferedPages[page] = body.repos;
       setRepos(body.repos);
+
       setTotalPages(body.pages);
     })
     .catch(setError);
@@ -96,6 +106,15 @@ function App() {
       await processLoading(true);
   };
 
+  const switchLanguageFilter = (lang) => {
+    if (filteredLanguages.includes(lang)) {
+      const index = filteredLanguages.indexOf(lang);
+      filteredLanguages.splice(index, 1);
+    } else filteredLanguages.push(lang);
+
+    processLoading(true);
+  };
+
   const showButtons = () => !error && !isLoading;
 
   useEffect(() => {
@@ -108,7 +127,7 @@ function App() {
     // WARNING: never display error details at page body
     body = (<div>Oops, something went wrong... Try to reload page</div>);
     console.error(error);
-  } else if (!isLoading)
+  } else if (!isLoading && repos)
     body = repos.map(repo => <ul key={repo.owner.username + repo.name}>{RepoCard({repo})}</ul>);
 
   return (
@@ -116,6 +135,7 @@ function App() {
       <ToastContainer/>
       <div className='page-container'>
       <h1>The most popular GitHub repositories</h1>
+      {languageOptions.map(lang => <LanguageOption lang={lang} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)}
       <div className='repos-container'>
           {body}
       </div>

@@ -52,7 +52,7 @@
   }
 }
 
-@mixin make-borderless-btn($color: var(--default-content-color), $hover-color: var(--default-content-hover-color)) {
+@mixin make-borderless-btn($color: var(--default-content-color), $bg-color: #00000000, $hover-color: var(--default-content-hover-color)) {
   @include add-hover-bg-animation($hover-color);
 
   align-items: center;
@@ -62,15 +62,15 @@
   font-weight: bold;
   border: none;
   color: $color;
-  background: none;
+  background: $bg-color;
 }
 
 @mixin add-solid-border($color: var(--default-content-color), $thickness: 1px) {
   border: 1px solid $color;
 }
 
-@mixin make-bordered-btn($color: var(--default-content-color), $hover-color: var(--default-content-hover-color)) {
-  @include make-borderless-btn($color, $hover-color);
+@mixin make-bordered-btn($color: var(--default-content-color), $bg-color: #fff, $hover-color: var(--default-content-hover-color)) {
+  @include make-borderless-btn($color, $bg-color, $hover-color);
   @include add-solid-border($color);
 }
 
@@ -168,4 +168,18 @@ ul {
 
 a {
   color: var(--default-content-color);
+}
+
+.lang-option {
+  border-radius: 4px;
+  padding: 1px;
+  margin-left: 0.4em;
+
+  &:not(.selected) {
+    @include make-bordered-btn();
+  }
+
+  &.selected {
+    @include make-borderless-btn(#ffffff, #000000, #0000007e);
+  }
 }
