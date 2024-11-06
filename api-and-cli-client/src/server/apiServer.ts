@@ -28,6 +28,7 @@ class ServerRequestProcessor {
     readonly method: RequestMethod | undefined
     readonly __apiCallProcessor: ApiCallProcessor
     readonly responser: Responser
+    readonly params: any
     __apiVersion: ApiVersion | null = null
 
     public constructor(req: http.IncomingMessage, res: http.ServerResponse, callback: ApiCallProcessor) {
@@ -40,6 +41,7 @@ class ServerRequestProcessor {
         this.url = new URL(req.url, `https://${req.headers.host}`);
         this.pathnameSegments = this.url.pathname.split('/').slice(1);
         this.method = req.method === undefined ? undefined : RequestMethod.parse(req.method);
+        this.params = this.url.searchParams;
         this.responser = new Responser(res);
         this.__apiCallProcessor = callback;
     }
@@ -138,8 +140,21 @@ class ServerRequestProcessor {
             return;
         }
 
+        let langsFilter = [];
+
+        if (this.params.has('langs'))
+            try {
+                langsFilter = JSON.parse(this.params.get('langs'));
+
+                if (!Array.isArray(langsFilter) || langsFilter.some(lang => typeof lang !== 'string'))
+                    throw Error();
+            } catch {
+                this.sendErrorMessage(ResponseError.INVALID, 'expected string[] for langs query parameter', ResponseCode.BAD_REQUEST);
+                return;
+            }
+
         if (this.pathnameSegments[2] == 'pages') {
-            this.processApiCall(ApiCall.GET_REPO_PAGES_COUNT);
+            this.processApiCall(ApiCall.GET_REPO_PAGES_COUNT, langsFilter);
             return;
         }
 
@@ -172,7 +187,7 @@ class ServerRequestProcessor {
             return;
         }
 
-        this.processApiCall(ApiCall.GET_REPOS, {page: pageNum});
+        this.processApiCall(ApiCall.GET_REPOS, {page: pageNum, langs: langsFilter});
     }
 
     handleSyncNow() {

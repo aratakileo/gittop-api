@@ -107,3 +107,16 @@ export const parseSysArgFlags = (expectedFlags: any) => {
 }
 
 export const getValueOrDefault = (obj: any, key: string, _default: any) => key in obj ? obj[key] : _default;
+
+export const getNamedFilterSubQuery = (columnName: string, comparableValues: any[]) => {
+    if (comparableValues.length === 0)
+        return ({
+            query: 'true',
+            values: []
+        });
+    
+    return ({
+        query: `LOWER(IFNULL(${columnName}, 'n/a')) IN (?)`,
+        values: [comparableValues.map(str => str.toLowerCase())]
+    });
+};

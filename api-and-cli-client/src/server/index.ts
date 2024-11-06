@@ -8,7 +8,7 @@ import {
 } from "./constants";
 import {existsSync, readFileSync, writeFileSync} from "fs";
 import mysql from "mysql2";
-import {getValueOrDefault, normalizeRepositoryObject, parseSysArgFlags, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
+import {getNamedFilterSubQuery, getValueOrDefault, normalizeRepositoryObject, parseSysArgFlags, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
 import {ApiServer} from "./apiServer";
 import {fetchApi, mkdirSyncIfDoesNotExist} from "../utils";
 
@@ -111,11 +111,12 @@ const runIntervalDataSyncer = (force = false) => {
 
 runIntervalDataSyncer();
 
-const getRepos = (page: number) => new Promise<any>((resolve, reject) => {
+const getRepos = (page: number, langs: string[]) => new Promise<any>((resolve, reject) => {
     const pool = mysql.createPool(DB_CONFIG);
-    const repos_query = 'SELECT *, (select username from owners where owners.id = owner_id) as owner_username FROM repositories limit ?, ?;';
+    const subQueryData = getNamedFilterSubQuery('lang', langs);
+    const repos_query = `SELECT *, (select username from owners where owners.id = owner_id) as owner_username FROM repositories WHERE ${subQueryData.query} limit ?, ?;`;
 
-    pool.query(repos_query, [page * REPOS_ON_PAGE, REPOS_ON_PAGE], (err, result) => {
+    pool.query(repos_query, [...subQueryData.values, page * REPOS_ON_PAGE, REPOS_ON_PAGE], (err, result) => {
         if (err) {
             reject(err);
             return;
@@ -127,20 +128,29 @@ const getRepos = (page: number) => new Promise<any>((resolve, reject) => {
     });
 });
 
-const getRepoPages = () => new Promise<any>((resolve, reject) => {
+const getRepoPages = (langs: string[]) => new Promise<any>((resolve, reject) => {
     const pool = mysql.createPool(DB_CONFIG);
-    const pages_count_query = 'SELECT count(*) as count FROM repositories;';
+    const subQueryData = getNamedFilterSubQuery('lang', langs);
+    const pagesCountQuery = `SELECT IFNULL(lang, 'N/A') as lang, count(id) as count FROM repositories WHERE ${subQueryData.query} group by lang;`;
 
-    pool.query(pages_count_query, (err, result) => {
+    pool.query(pagesCountQuery, [...subQueryData.values], (err, result) => {
         if (err) {
             reject(err);
             return;
         }
 
-        resolve({
-            // @ts-ignore
-            'pages': result[0].count % REPOS_ON_PAGE + Math.trunc(result[0].count / REPOS_ON_PAGE)
-        });
+        const langs: string[] = [];
+        let count = 0;
+
+        // @ts-ignore
+        for (let entry of result) {
+            count += entry.count;
+            langs.push(entry.lang);
+        }
+
+        const pages = Math.max(1, Math.ceil(count / REPOS_ON_PAGE));
+
+        resolve({pages, langs});
         pool.end();
     });
 });
@@ -184,8 +194,8 @@ const server = new ApiServer(async (apiCall, data, resolve, reject) => {
             });
             return;
         case ApiCall.GET_REPOS:
-            await promiseResponse(getRepos(data.page), repos => {
-                if (repos.length == 0) {
+            await promiseResponse(getRepos(data.page, data.langs), repos => {
+                if (repos.length === 0 && data.page !== 0) {
                     reject(
                         ResponseError.INVALID,
                         `the requested repositories page number '${data.page}' is out of bounds`,
@@ -194,15 +204,15 @@ const server = new ApiServer(async (apiCall, data, resolve, reject) => {
                     return;
                 }
 
-                promiseResponse(getRepoPages(), pagesData => resolve({
-                    repos: repos,
+                promiseResponse(getRepoPages(data.langs), pagesData => resolve({
+                    repos,
                     page: data.page,
                     pages: pagesData.pages
                 }));
             });
             return;
         case ApiCall.GET_REPO_PAGES_COUNT:
-            await promiseResponse(getRepoPages(), result => resolve(result));
+            await promiseResponse(getRepoPages(data), result => resolve(result));
             return;
         case ApiCall.GET_REPO:
             await promiseResponse(getRepo(data), repo => {
