@@ -6,6 +6,7 @@ import { applyVisibility } from './utils/utils';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { LanguageOption } from './components/language-option';
+import { SelectableButton } from './components/selectable-btn';
 
 const getDefaultApiRequestParams = (method = 'GET') => ({
   method,
@@ -28,6 +29,7 @@ function App() {
   const [languageOptions, setLanguageOptions] = useState([]);
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
+  const [order, setOrder] = useState('desc');
 
   const goNextPage = () => {
     if (hasNextPage)
@@ -63,7 +65,7 @@ function App() {
     .then(body => setLanguageOptions(body.langs))
     .catch(setError);
   
-    await fetch(getApiUrlTo(`/v2/repos/page/${page}?langs=${encodeURIComponent(JSON.stringify(filteredLanguages))}`), getDefaultApiRequestParams())
+    await fetch(getApiUrlTo(`/v2/repos/page/${page}?langs=${encodeURIComponent(JSON.stringify(filteredLanguages))}&order=${order}`), getDefaultApiRequestParams())
     .then(res => res.json())
     .then(body => {
       bufferedPages[page] = body.repos;
@@ -115,11 +117,17 @@ function App() {
     processLoading(true);
   };
 
+  const switchOrder = () => {
+    setOrder(order === 'asc' ? 'desc' : 'asc');
+
+    processLoading(true);
+  };
+
   const showButtons = () => !error && !isLoading;
 
   useEffect(() => {
     processLoading();
-  }, [page, totalPages, hasNextPage, hasPrevPage]);
+  }, [page, totalPages, hasNextPage, hasPrevPage, order]);
 
   let body = (<div>Loading...</div>);
 
@@ -135,7 +143,14 @@ function App() {
       <ToastContainer/>
       <div className='page-container'>
       <h1>The most popular GitHub repositories</h1>
-      Languages: {languageOptions.map(lang => <LanguageOption lang={lang} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)}
+      <div className='filter-options center vertical'>
+        <p>Languages: </p>{languageOptions.map(lang => <LanguageOption lang={lang} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)}
+      </div>
+      <div className='filter-options'>
+        <p>Order: </p>
+        <SelectableButton text='DESC' selected={order === 'desc'} onClick={switchOrder}/> 
+        <SelectableButton text='ASC' selected={order === 'asc'} onClick={switchOrder}/>
+      </div>
       <div className='repos-container'>
           {body}
       </div>

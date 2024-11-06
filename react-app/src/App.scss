@@ -63,6 +63,7 @@
   border: none;
   color: $color;
   background: $bg-color;
+  height: fit-content;
 }
 
 @mixin add-solid-border($color: var(--default-content-color), $thickness: 1px) {
@@ -170,7 +171,7 @@ a {
   color: var(--default-content-color);
 }
 
-.lang-option {
+.selectable-btn {
   border-radius: 4px;
   padding: 1px;
   margin-left: 0.4em;
@@ -182,4 +183,16 @@ a {
   &.selected {
     @include make-borderless-btn(#ffffff, #000000, #0000007e);
   }
+}
+
+.filter-options {
+  padding: 2px;
+  display: flex;
+
+  p {
+    margin: 0px;
+    padding: 6px;
+  }
+
+  text-align: center;
 }

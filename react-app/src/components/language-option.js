@@ -8,5 +8,5 @@ export const LanguageOption = ({lang, onStateChanged}) => {
         onStateChanged(lang);
     };
 
-    return (<button onClick={switchSelection} className={`lang-option ${selected ? 'selected' : ''}`}>{lang}</button>)
+    return (<button onClick={switchSelection} className={`selectable-btn ${selected ? 'selected' : ''}`}>{lang}</button>)
 };
