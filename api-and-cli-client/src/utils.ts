@@ -41,4 +41,6 @@ export namespace Result {
     export const ok = <T>(val: T): Result<T, null> => ({is_ok: true, val});
     export const err = <E = Error>(err: E): Result<null, E> => ({is_ok: false, err});
     export const errOf = (err: string): Result<null, Error> => ({is_ok: false, err: Error(err)});
-}
+};
+
+export const getValueOrDefault = (obj: any, key: string, _default: any) => key in obj ? obj[key] : _default;

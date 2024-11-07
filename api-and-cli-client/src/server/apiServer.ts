@@ -3,13 +3,14 @@ import {URL} from "url";
 import {RepositorySign} from "./utils";
 import {ApiCall, ResponseCode, ResponseError} from "./constants";
 import { RequestMethod } from "../cli-client/constants";
-import { Responser } from "./responseBuilder";
+import { Responser } from "./responser";
+import { parseValue, ValueType } from "../parseUtil";
 
 
 enum ApiVersion {
     V1,
     V2
-}
+};
 
 
 export type ApiCallProcessor = (
@@ -59,7 +60,9 @@ class ServerRequestProcessor {
             return;
         }
 
-        switch (this.pathnameSegments[0]) {
+        const rawApiVersion = this.pathnameSegments[0];
+
+        switch (rawApiVersion) {
             case 'v1':
                 this.__apiVersion = ApiVersion.V1;
                 break;
@@ -67,7 +70,7 @@ class ServerRequestProcessor {
                 this.__apiVersion = ApiVersion.V2;
                 break;
             default:
-                this.responser.sendRouteNotFoundError(`requested invalid api version '${this.pathnameSegments[0]}'`);
+                this.responser.sendRouteNotFoundError(`requested invalid api version '${rawApiVersion}'`);
                 return;
         }
 
@@ -167,7 +170,9 @@ class ServerRequestProcessor {
             return;
         }
 
-        if (this.pathnameSegments[3] === '') {
+        const rawPageNum = this.pathnameSegments[3];
+
+        if (rawPageNum === '') {
             this.sendErrorMessage(
                 ResponseError.INVALID,
                 `the requested repositories page number is empty`,
@@ -176,24 +181,24 @@ class ServerRequestProcessor {
             return;
         }
 
-        const pageNum = parseInt(this.pathnameSegments[3]);
+        const pageNum = parseValue(rawPageNum, ValueType.UINT);
 
-        if (isNaN(pageNum) || !Number.isInteger(pageNum) || pageNum < 0) {
+        if (pageNum === undefined) {
             this.sendErrorMessage(
                 ResponseError.INVALID,
-                `the requested repositories page number '${this.pathnameSegments[3]}' is invalid`,
+                `the requested repositories page number '${rawPageNum}' is invalid`,
                 ResponseCode.BAD_REQUEST
             );
             return;
         }
 
-        let order = 'desc';
+        let order = 'DESC';
 
         if (this.params.has('order'))
         {
             const _order = this.params.get('order');
 
-            if (typeof _order !== 'string' || !['asc', 'desc'].includes(_order.toLowerCase())) {
+            if (typeof _order !== 'string' || !['ASC', 'DESC'].includes(_order.toUpperCase())) {
                 this.sendErrorMessage(ResponseError.INVALID, `expected 'ASC' or 'DESC' for 'order' query parameter, but got '${_order}'`, ResponseCode.BAD_REQUEST);
                 return;
             }

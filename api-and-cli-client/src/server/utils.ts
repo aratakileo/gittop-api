@@ -1,5 +1,6 @@
 import {PathLike, readFileSync} from "fs";
 import {Result} from '../utils';
+import { isInt } from "../parseUtil";
 
 export const readFileAndGetOrThrow = (filePath: PathLike, err_message: string) => {
     try {
@@ -32,14 +33,12 @@ export class RepositorySign {
     public readonly id: number | null
 
     public constructor(repo_name_or_id: string) {
-        const repo_id = parseInt(repo_name_or_id);
-
-        if (isNaN(Number(repo_name_or_id))) {
+        if (isInt(repo_name_or_id)) {
+            this.id = Number(repo_name_or_id);
+            this.name = null;
+        } else {
             this.name = repo_name_or_id;
             this.id = null;
-        } else {
-            this.id = repo_id;
-            this.name = null;
         }
     }
 
@@ -51,53 +50,6 @@ export class RepositorySign {
         return 'repository with ' + (this.isById ? `id '${this.id}'` : `name '${this.name}'`);
     }
 }
-
-export const parseSysArgFlags = (expectedFlags: any) => {
-    const values = new Map<string, any>();
-
-    for (const arg of process.argv.slice(2)) {
-        if (arg[0] !== '-')
-            return Result.errOf(`expected '-' at start of argument '${arg}'`);
-
-        if (!arg.includes('='))
-            return Result.errOf(`expected '=' in argument '${arg}'`);
-
-        const sepIndex = arg.indexOf('=');
-        const argKey = arg.slice(1, sepIndex);
-
-        if (!(argKey in expectedFlags))
-            return Result.errOf(`unexpected argument with name '${argKey}'`);
-
-        const notParsedValue = arg.slice(sepIndex + 1);
-
-        if (notParsedValue === '')
-            return Result.errOf(`empty value of argument '${arg}'`);
-
-        const expectedType = expectedFlags[argKey];
-
-        if (['false', 'true', 'no', 'yes', 'on', 'off'].includes(notParsedValue)) {
-            if (expectedType !== 'bool')
-                return Result.errOf(`expected type '${expectedType}' for argument '${argKey}' but got 'bool'`);
-
-            values.set(argKey, ['true', 'yes', 'on'].includes(notParsedValue));
-            continue;
-        }
-
-        if (Number.isInteger(notParsedValue)) {
-            if (expectedType !== 'int')
-                return Result.errOf(`expected type '${expectedType}' for argument '${argKey}' but got 'int'`);
-
-            values.set(argKey, Number(notParsedValue));
-            continue;
-        }
-
-        return Result.errOf(`invalid value of argument '${arg}'`);
-    };
-
-    return Result.ok(Object.freeze(Object.fromEntries(values)));
-}
-
-export const getValueOrDefault = (obj: any, key: string, _default: any) => key in obj ? obj[key] : _default;
 
 export const getNamedFilterSubQuery = (columnName: string, comparableValues: any[]) => {
     if (comparableValues.length === 0)

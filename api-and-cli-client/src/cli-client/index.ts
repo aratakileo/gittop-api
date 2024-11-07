@@ -1,5 +1,6 @@
 import {getRequestOptions, RequestMethod} from "./constants";
-import {fetchApi, Result} from "../utils";
+import {fetchApi, getValueOrDefault, Result} from "../utils";
+import { parseFlags, ValueType } from "../parseUtil";
 
 
 const describeRepo = (data: any) => {
@@ -50,35 +51,19 @@ class CliClient {
     }
 
     private parseFilters() {
-        let langs: string[] = [];
-        let order = 'DESC';
+        const flagsResult = parseFlags(this.args.slice(this.argIndex + 1), {
+            'langs': ValueType.ANY,
+            'order': ValueType.ANY
+        });
 
-        while (this.next()) {
-            if (this.arg === undefined)
-                throw Error('arg is undefined');
+        if (!flagsResult.is_ok)
+            return flagsResult;
 
-            let filterName = this.arg.slice(0, this.arg.indexOf('='));
+        const langs = getValueOrDefault(flagsResult.val, 'langs', '').split(',');
+        const order = getValueOrDefault(flagsResult.val, 'order', 'DESC');
 
-            const filterValue = this.arg.slice(filterName.length + 1);
-
-            if (filterValue.length === 0)
-                return Result.err(`'${filterName}' filter argument value is empty`);
-
-            switch (filterName) {
-                case 'langs':
-                    langs = filterValue.split(',');
-                    break;
-                case 'order':
-                    if (!['asc', 'desc'].includes(filterValue.toLowerCase()))
-                        return Result.err(`expected 'ASC' or 'DESC', but got '${filterValue}' for filter '${filterName}'`);
-
-                    order = filterValue.toUpperCase();
-
-                    break;
-                default:
-                    return Result.err(`invalid filter argument '${this.arg}'`);
-            }
-        }
+        if (!['ASC', 'DESC'].includes(order.toUpperCase()))
+            return Result.err(`expected 'ASC' or 'DESC', but got '${order}' for filter 'order'`);
 
         return Result.ok({langs, order});
     }
@@ -86,88 +71,99 @@ class CliClient {
     private async handleGet() {
         switch (this.next()) {
             case 'repo':
-                if (this.next() === undefined) {
-                    console.error('expected repository name or id');
-                    return;
-                }
-
-                this.makeApiRequest('/v1/repo/' + this.arg, data => {
-                    if (data.status !== 200) {
-                        console.error(`${data.body.error}: ${data.body.description}`);
-                        return;
-                    }
-
-                    console.log(describeRepo(data.body));
-                });
-
+                this.handleGetRepo();
                 return;
             case 'repos':
-                if (this.next() === undefined) {
-                    console.error('expected page number');
-                    return;
-                }
-
-                if (isNaN(Number(this.arg))) {
-                    console.error(`'${this.arg}' is not a number`);
-                    return;
-                }
-
-                // @ts-ignore
-                const pageNum = parseInt(this.arg);
-                let pages = -1;
-
-                const reposFilterResult = this.parseFilters();
-
-                if (!reposFilterResult.is_ok) {
-                    console.error(reposFilterResult.err);
-                    return;
-                }
-
-                let langs: any = {};
-
-                await this.makeApiRequest('/v2/repos/pages', data => {
-                    pages = data.body.pages;
-                    langs = data.body.langs;
-                }, reposFilterResult.val);
-
-                if (pageNum >= pages) {
-                    console.error(`page ${pageNum} out of bounds of ${pages} pages`);
-                    return;
-                }
-
-                console.log(`For languages: ${Object.keys(langs).join(', ')}`);
-                console.log(`${reposFilterResult.val?.order.toLowerCase() === 'asc' ? 'Ascending' : 'Descending'} order\n`);
-
-                this.makeApiRequest('/v2/repos/page/' + pageNum, data => {
-                    // @ts-ignore
-                    for (let repoData of data.body.repos)
-                        console.log(describeRepo(repoData));
-
-                    console.log(`page ${pageNum + 1} of ${data.body.pages}`);
-                }, reposFilterResult.val);
+                await this.handleGetRepos();
                 return;
             case 'stats':
-                await this.makeApiRequest('/v2/repos/pages', data => {
-                    console.log(`${data.body.total} repositories on ${data.body.pages} pages`);
-
-                    for (const [lang, count] of Object.entries(data.body.langs))
-                        console.log(` - ${lang}: ${count}`);
-                });
-
-                await this.makeApiRequest('/v2/repos/page/0', data => {
-                    const mostPopularRepo = data.body.repos[0];
-                    console.log(`The most popular repo ${mostPopularRepo.name}/${mostPopularRepo.owner.username} with ${mostPopularRepo.stars} stars`);
-                })
-
-                await this.makeApiRequest('/v2/repos/page/0', data => {
-                    const leastPopularRepo = data.body.repos[0];
-                    console.log(`The least popular repo ${leastPopularRepo.name}/${leastPopularRepo.owner.username} with ${leastPopularRepo.stars} stars`);
-                }, {order: 'ASC'})
+                await this.handleGetStats();
                 return;
             default:
                 this.handleInvalidCommand();
                 return;
         }
+    }
+
+    private async handleGetStats() {
+        await this.makeApiRequest('/v2/repos/pages', data => {
+            console.log(`${data.body.total} repositories on ${data.body.pages} pages`);
+
+            for (const [lang, count] of Object.entries(data.body.langs))
+                console.log(` - ${lang}: ${count}`);
+        });
+
+        await this.makeApiRequest('/v2/repos/page/0', data => {
+            const mostPopularRepo = data.body.repos[0];
+            console.log(`The most popular repo ${mostPopularRepo.name}/${mostPopularRepo.owner.username} with ${mostPopularRepo.stars} stars`);
+        })
+
+        await this.makeApiRequest('/v2/repos/page/0', data => {
+            const leastPopularRepo = data.body.repos[0];
+            console.log(`The least popular repo ${leastPopularRepo.name}/${leastPopularRepo.owner.username} with ${leastPopularRepo.stars} stars`);
+        }, {order: 'ASC'})
+    }
+
+    private async handleGetRepos() {
+        if (this.next() === undefined) {
+            console.error('expected page number');
+            return;
+        }
+
+        if (isNaN(Number(this.arg))) {
+            console.error(`'${this.arg}' is not a number`);
+            return;
+        }
+
+        // @ts-ignore
+        const pageNum = parseInt(this.arg);
+        let pages = -1;
+
+        const reposFilterResult = this.parseFilters();
+
+        if (!reposFilterResult.is_ok) {
+            console.error(reposFilterResult.err);
+            return;
+        }
+
+        let langs: any = {};
+
+        await this.makeApiRequest('/v2/repos/pages', data => {
+            pages = data.body.pages;
+            langs = data.body.langs;
+        }, reposFilterResult.val);
+
+        if (pageNum >= pages) {
+            console.error(`page ${pageNum} out of bounds of ${pages} pages`);
+            return;
+        }
+
+        console.log(`For languages: ${Object.keys(langs).join(', ')}`);
+        console.log(`${reposFilterResult.val?.order.toLowerCase() === 'asc' ? 'Ascending' : 'Descending'} order\n`);
+
+        this.makeApiRequest('/v2/repos/page/' + pageNum, data => {
+            // @ts-ignore
+            for (let repoData of data.body.repos)
+                console.log(describeRepo(repoData));
+
+            console.log(`page ${pageNum + 1} of ${data.body.pages}`);
+        }, reposFilterResult.val);
+    }
+
+    private handleGetRepo() {
+        if (this.next() === undefined) {
+            console.error('expected repository name or id');
+            return;
+        }
+
+        this.makeApiRequest('/v1/repo/' + this.arg, data => {
+            if (data.status !== 200) {
+                console.error(`${data.body.error}: ${data.body.description}`);
+                return;
+            }
+
+            console.log(describeRepo(data.body));
+        });
     }
 
     private handleInvalidCommand() {

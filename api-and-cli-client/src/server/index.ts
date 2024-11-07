@@ -8,15 +8,16 @@ import {
 } from "./constants";
 import {existsSync, readFileSync, writeFileSync} from "fs";
 import mysql from "mysql2";
-import {getNamedFilterSubQuery, getValueOrDefault, normalizeRepositoryObject, parseSysArgFlags, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
+import {getNamedFilterSubQuery, normalizeRepositoryObject, RepositorySign, runImmediatelyAndThenEvery} from "./utils";
 import {ApiServer} from "./apiServer";
-import {fetchApi, mkdirSyncIfDoesNotExist} from "../utils";
+import {fetchApi, getValueOrDefault, mkdirSyncIfDoesNotExist} from "../utils";
+import { parseFlags, ValueType } from "../parseUtil";
 
 const getProgramConfig = () => {
-    const flagsResult = parseSysArgFlags({
-        'request-delay-in-minutes': 'int',
-        'use-cached-data': 'bool',
-        'send-requests': 'bool'
+    const flagsResult = parseFlags(process.argv.slice(2), {
+        'request-delay-in-minutes': ValueType.INT,
+        'use-cached-data': ValueType.BOOL,
+        'send-requests': ValueType.BOOL
     });
 
     if (!flagsResult.is_ok)

@@ -17,7 +17,7 @@ const getDefaultApiRequestParams = (method = 'GET') => ({
 const filteredLanguages = [];
 
 var bufferedPages = {};
-var syncnowCooldown = false;
+var syncnowIsTemoraryRestricted = false;
 
 function App() {
   const [repos, setRepos] = useState([]);
@@ -85,16 +85,16 @@ function App() {
   };
 
   const syncnowServerDatabase = async () => {
-    if (syncnowCooldown) {
+    if (syncnowIsTemoraryRestricted) {
       toast.error('Wait for the cooldown to end');
       return;
     }
 
     setIsLoading(true);
 
-    syncnowCooldown = true;
+    syncnowIsTemoraryRestricted = true;
 
-    setTimeout(() => syncnowCooldown = false, 10000);
+    setTimeout(() => syncnowIsTemoraryRestricted = false, 10000);
 
     await fetch(getApiUrlTo('/v1/syncnow'), getDefaultApiRequestParams('POST')).then(async res => {
       const body = await res.json();
@@ -127,7 +127,7 @@ function App() {
     processLoading(true);
   };
 
-  const showButtons = () => !error && !isLoading;
+  const showControls = () => !error && !isLoading;
 
   useEffect(() => {
     processLoading();
@@ -147,12 +147,12 @@ function App() {
       <ToastContainer/>
       <div className='page-container'>
       <h1>The most popular GitHub repositories</h1>
-      <div className='filter-options center vertical'>
+      <div className={applyVisibility('filter-options center vertical', showControls())}>
         <p>Languages: </p>
         {Object.keys(languageOptions).map(lang => <SelectableButton text={`${lang}: ${languageOptions[lang]}`} onClick={() => switchLanguageFilter(lang)} selected={filteredLanguages.includes(lang)} key={`lang-option-${lang}`}/>)}
         <button className={applyVisibility('borderless-btn margin-left', filteredLanguages.length !== 0)} onClick={clearLangFilters}>Clear selection</button>
       </div>
-      <div className='filter-options'>
+      <div className={applyVisibility('filter-options', showControls())}>
         <p>Order: </p>
         <SelectableButton text='DESC' selected={order === 'desc'} onClick={switchOrder}/> 
         <SelectableButton text='ASC' selected={order === 'asc'} onClick={switchOrder}/>
@@ -161,9 +161,9 @@ function App() {
           {body}
       </div>
       <div className='center horizontal'>
-        <button onClick={goPrevPage} className={applyVisibility('prev-btn', hasPrevPage && showButtons())}>Prev</button>
-        <button onClick={syncnowServerDatabase} className={applyVisibility('borderless-btn', showButtons())}>sync now</button>
-        <button onClick={goNextPage} className={applyVisibility('next-btn', hasNextPage && showButtons())}>Next</button>
+        <button onClick={goPrevPage} className={applyVisibility('prev-btn', hasPrevPage && showControls())}>Prev</button>
+        <button onClick={syncnowServerDatabase} className={applyVisibility('borderless-btn', showControls())}>sync now</button>
+        <button onClick={goNextPage} className={applyVisibility('next-btn', hasNextPage && showControls())}>Next</button>
       </div>
     </div>
     </>
