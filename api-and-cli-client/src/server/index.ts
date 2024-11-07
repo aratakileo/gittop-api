@@ -31,7 +31,7 @@ const getProgramConfig = () => {
 
 const programConfig = getProgramConfig();
 
-console.log('Has ran with config:', programConfig)
+console.log('Has ran with config:', programConfig);
 
 const getRepositories = () => new Promise<Array<any>>((resolve, reject) => {
     if (existsSync(REPOSITORIES_CONTAINER_FILE_PATH) && programConfig.use_cached_data) {
@@ -139,18 +139,18 @@ const getRepoPages = (langs: string[]) => new Promise<any>((resolve, reject) => 
             return;
         }
 
-        const langs: string[] = [];
+        const langs: any = {};
         let count = 0;
 
         // @ts-ignore
         for (let entry of result) {
             count += entry.count;
-            langs.push(entry.lang);
+            langs[entry.lang] = entry.count;
         }
 
         const pages = Math.max(1, Math.ceil(count / REPOS_ON_PAGE));
 
-        resolve({pages, langs});
+        resolve({langs, pages, total: count});
         pool.end();
     });
 });

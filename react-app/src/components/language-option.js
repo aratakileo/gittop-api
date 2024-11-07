@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export const LanguageOption = ({lang, onStateChanged}) => {
+export const LanguageOption = ({lang, count, onStateChanged}) => {
     const [selected, setSelected] = useState(false);
 
     const switchSelection = () => {
@@ -8,5 +8,5 @@ export const LanguageOption = ({lang, onStateChanged}) => {
         onStateChanged(lang);
     };
 
-    return (<button onClick={switchSelection} className={`selectable-btn ${selected ? 'selected' : ''}`}>{lang}</button>)
+    return (<button onClick={switchSelection} className={`selectable-btn ${selected ? 'selected' : ''}`}>{`${lang}: ${count}`}</button>)
 };

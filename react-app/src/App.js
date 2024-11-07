@@ -26,7 +26,7 @@ function App() {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
-  const [languageOptions, setLanguageOptions] = useState([]);
+  const [languageOptions, setLanguageOptions] = useState({});
   const [hasNextPage, setHasNextPage] = useState(false);
   const [hasPrevPage, setHasPrevPage] = useState(false);
   const [order, setOrder] = useState('desc');
@@ -144,7 +144,7 @@ function App() {
       <div className='page-container'>
       <h1>The most popular GitHub repositories</h1>
       <div className='filter-options center vertical'>
-        <p>Languages: </p>{languageOptions.map(lang => <LanguageOption lang={lang} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)}
+        <p>Languages: </p>{Object.keys(languageOptions).map(lang => <LanguageOption lang={lang} count={languageOptions[lang]} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)}
       </div>
       <div className='filter-options'>
         <p>Order: </p>

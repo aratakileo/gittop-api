@@ -126,7 +126,7 @@ class CliClient {
                     return;
                 }
 
-                let langs: string[] = [];
+                let langs: any = {};
 
                 await this.makeApiRequest('/v2/repos/pages', data => {
                     pages = data.body.pages;
@@ -138,7 +138,7 @@ class CliClient {
                     return;
                 }
 
-                console.log(`For languages: ${langs.join(', ')}`);
+                console.log(`For languages: ${Object.keys(langs).join(', ')}`);
                 console.log(`${reposFilterResult.val?.order.toLowerCase() === 'asc' ? 'Ascending' : 'Descending'} order\n`);
 
                 this.makeApiRequest('/v2/repos/page/' + pageNum, data => {
@@ -148,6 +148,27 @@ class CliClient {
 
                     console.log(`page ${pageNum + 1} of ${data.body.pages}`);
                 }, reposFilterResult.val);
+                return;
+            case 'stats':
+                await this.makeApiRequest('/v2/repos/pages', data => {
+                    console.log(`${data.body.total} repositories on ${data.body.pages} pages`);
+
+                    for (const [lang, count] of Object.entries(data.body.langs))
+                        console.log(` - ${lang}: ${count}`);
+                });
+
+                await this.makeApiRequest('/v2/repos/page/0', data => {
+                    const mostPopularRepo = data.body.repos[0];
+                    console.log(`The most popular repo ${mostPopularRepo.name}/${mostPopularRepo.owner.username} with ${mostPopularRepo.stars} stars`);
+                })
+
+                await this.makeApiRequest('/v2/repos/page/0', data => {
+                    const leastPopularRepo = data.body.repos[0];
+                    console.log(`The least popular repo ${leastPopularRepo.name}/${leastPopularRepo.owner.username} with ${leastPopularRepo.stars} stars`);
+                }, {order: 'ASC'})
+                return;
+            default:
+                this.handleInvalidCommand();
                 return;
         }
     }
