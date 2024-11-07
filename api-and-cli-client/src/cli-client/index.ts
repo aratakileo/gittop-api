@@ -85,9 +85,6 @@ class CliClient {
 
     private async handleGet() {
         switch (this.next()) {
-            case undefined:
-                this.handleInvalidCommand();
-                return;
             case 'repo':
                 if (this.next() === undefined) {
                     console.error('expected repository name or id');
