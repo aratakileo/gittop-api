@@ -45,6 +45,11 @@ function App() {
     setHasNextPage(page < totalPages - 1);
   };
 
+  const clearLangFilters = () => {
+    filteredLanguages.splice(0, filteredLanguages.length);
+    processLoading(true);
+  }
+
   const processLoading = async (override=false) => {
     if (override) {
       setPage(0);
@@ -143,13 +148,9 @@ function App() {
       <div className='page-container'>
       <h1>The most popular GitHub repositories</h1>
       <div className='filter-options center vertical'>
-        {/* <p>Languages: </p>{Object.keys(languageOptions).map(lang => <LanguageOption lang={lang} count={languageOptions[lang]} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)} */}
         <p>Languages: </p>
         {Object.keys(languageOptions).map(lang => <SelectableButton text={`${lang}: ${languageOptions[lang]}`} onClick={() => switchLanguageFilter(lang)} selected={filteredLanguages.includes(lang)} key={`lang-option-${lang}`}/>)}
-        <button className={applyVisibility('borderless-btn margin-left', filteredLanguages.length !== 0)} onClick={() => {
-          filteredLanguages.splice(0, filteredLanguages.length);
-          processLoading(true);
-        }}>Clear selection</button>
+        <button className={applyVisibility('borderless-btn margin-left', filteredLanguages.length !== 0)} onClick={clearLangFilters}>Clear selection</button>
       </div>
       <div className='filter-options'>
         <p>Order: </p>
