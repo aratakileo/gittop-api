@@ -9,7 +9,7 @@ export const RepoCard = ({repo}) => {
         <div className='name-container center vertical'>
             <b><p className='name'>{repoName}</p></b>
             <p className='stars'>{formatedNumericValue(repo.stars)}</p>
-            {repo.lang ? <p className='lang-name'>{repo.lang}</p> : ''}
+            {repo.lang ? <p className='lang-name margin-left'>{repo.lang}</p> : ''}
         </div>
         <InteractableText text={repo.description}/>
     </div>)

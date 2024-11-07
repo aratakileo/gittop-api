@@ -10,7 +10,7 @@ export const formatedNumericValue = (num) => {
     return Math.floor(num / 1000).toString() + formatFractionalPart(num, 1000) + 'K';
 };
 
-export const applyVisibility = (className, visibility) => visibility ? className : `${className} invisible`;
+export const applyVisibility = (className, visible) => visible ? className : `${className} invisible`;
 
 export const isNullOrUndefined = obj => {
   return obj === null || obj === undefined;

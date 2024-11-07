@@ -84,7 +84,6 @@
     @include add-solid-border();
     border-radius: 4px;
     padding: 1px;
-    margin-left: 0.4em;
   }
 
   .stars {
@@ -148,7 +147,7 @@
   font-size: 1rem;
 }
 
-.syncnow-btn {
+.borderless-btn {
   @include make-borderless-btn();
   font-size: 1rem;
 }
@@ -195,4 +194,8 @@ a {
   }
 
   text-align: center;
+}
+
+.margin-left {
+  margin-left: 0.4em;
 }

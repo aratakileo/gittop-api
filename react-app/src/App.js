@@ -5,7 +5,6 @@ import React, { useState, useEffect } from 'react';
 import { applyVisibility } from './utils/utils';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { LanguageOption } from './components/language-option';
 import { SelectableButton } from './components/selectable-btn';
 
 const getDefaultApiRequestParams = (method = 'GET') => ({
@@ -144,7 +143,13 @@ function App() {
       <div className='page-container'>
       <h1>The most popular GitHub repositories</h1>
       <div className='filter-options center vertical'>
-        <p>Languages: </p>{Object.keys(languageOptions).map(lang => <LanguageOption lang={lang} count={languageOptions[lang]} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)}
+        {/* <p>Languages: </p>{Object.keys(languageOptions).map(lang => <LanguageOption lang={lang} count={languageOptions[lang]} onStateChanged={switchLanguageFilter} key={`lang-option-${lang}`}/>)} */}
+        <p>Languages: </p>
+        {Object.keys(languageOptions).map(lang => <SelectableButton text={`${lang}: ${languageOptions[lang]}`} onClick={() => switchLanguageFilter(lang)} selected={filteredLanguages.includes(lang)} key={`lang-option-${lang}`}/>)}
+        <button className={applyVisibility('borderless-btn margin-left', filteredLanguages.length !== 0)} onClick={() => {
+          filteredLanguages.splice(0, filteredLanguages.length);
+          processLoading(true);
+        }}>Clear selection</button>
       </div>
       <div className='filter-options'>
         <p>Order: </p>
@@ -156,7 +161,7 @@ function App() {
       </div>
       <div className='center horizontal'>
         <button onClick={goPrevPage} className={applyVisibility('prev-btn', hasPrevPage && showButtons())}>Prev</button>
-        <button onClick={syncnowServerDatabase} className={applyVisibility('syncnow-btn', showButtons())}>sync now</button>
+        <button onClick={syncnowServerDatabase} className={applyVisibility('borderless-btn', showButtons())}>sync now</button>
         <button onClick={goNextPage} className={applyVisibility('next-btn', hasNextPage && showButtons())}>Next</button>
       </div>
     </div>
