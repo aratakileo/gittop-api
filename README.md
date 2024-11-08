@@ -24,7 +24,7 @@ bash init-default.sh
 ```
 
 > [!NOTE]
-> This server will be available at the following address: `128.0.0.1:3000` (`localhost:3000`)
+> This server will be available at the following address: `127.0.0.1:3000` (`localhost:3000`)
 
 Now you can start the API server. To do this, write the following commands:
 ```sh
@@ -36,7 +36,7 @@ npm run start_server
 > Run the commands below only after API server is running
 
 > [!NOTE]
-> This server will be available at the following address: `128.0.0.1:3001` (`localhost:3001`)
+> This server will be available at the following address: [`127.0.0.1:3001`](http://127.0.0.1:3001) ([`localhost:3001`](http://localhost:3001))
 
 To start React app, write the following commands:
 ```sh
