@@ -1,5 +1,6 @@
 # Git TOP API
-Easy to use API for getting information about the most popular repositories on GitHub
+Easy to use API and React app for getting information about the most popular repositories on GitHub
+![React app preview](./react-app-preview.png)
 
 ### How to run project
 > [!CAUTION]
