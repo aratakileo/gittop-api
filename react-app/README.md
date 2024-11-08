@@ -29,6 +29,6 @@ npm run start:windows
 </details>
 
 > [!TIP]
-> You can easily change running port in `package.json` file on lines 18 and 19
+> You can easily change running port in `package.json` file at 18 and 19 lines
 
 After running the app you can check the app on [`127.0.0.1:3001`](http://127.0.0.1:3001)
