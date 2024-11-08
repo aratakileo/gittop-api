@@ -1,4 +1,4 @@
-# Git TOP API
+# GitHub top repositories API
 Easy to use API and React app for getting information about the most popular repositories on GitHub
 ![React app preview](./react-app-preview.png)
 
