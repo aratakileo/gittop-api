@@ -40,7 +40,7 @@ interface ExpectedFlags {
 }
 
 export const parseFlags = (flags: string[], expectedFlags: ExpectedFlags) => {
-    const values = new Map<string, number | string | boolean>();
+    const values = new Map<string, any>();
 
     for (const flag of flags) {
         if (!flag.includes('='))

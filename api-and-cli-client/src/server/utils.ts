@@ -1,5 +1,4 @@
-import {PathLike, readFileSync} from "fs";
-import {Result} from '../utils';
+import {existsSync, PathLike, readFileSync} from "fs";
 import { isInt } from "../parseUtil";
 
 export const readFileAndGetOrThrow = (filePath: PathLike, err_message: string) => {
@@ -8,12 +7,19 @@ export const readFileAndGetOrThrow = (filePath: PathLike, err_message: string) =
     } catch {
         throw Error(err_message);
     }
-}
+};
+
+export const readFileAndGetOrElse = (filePath: PathLike, elseText: string) => {
+    if (existsSync(filePath))
+        return readFileSync(filePath, 'utf8').replace(/^[\n\t]+|[\n\t]+$/g, '');
+
+    return elseText;
+};
 
 export const runImmediatelyAndThenEvery = (callback: () => void, ms: number) => {
     callback();
     return setInterval(callback, ms);
-}
+};
 
 export const normalizeRepositoryObject = (repo: any) => (repo ? {
         id: repo.id,

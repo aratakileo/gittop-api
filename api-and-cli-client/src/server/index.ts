@@ -42,6 +42,11 @@ const getRepositories = () => new Promise<Array<any>>((resolve, reject) => {
     }
 
     fetchApi(GITHUB_REQUEST_OPTIONS).then(data => {
+        if (data.status !== 200) {
+            reject(Error(`GitHub API has returned response with status '${data.status}' and body: ${data.body}`));
+            return;
+        }
+
         let result = data.body.items;
         
         mkdirSyncIfDoesNotExist(REPOSITORIES_CONTAINER_FILE_PATH.slice(0, REPOSITORIES_CONTAINER_FILE_PATH.lastIndexOf('/')));
@@ -85,9 +90,10 @@ const saveData = async (repos: Array<any>) => {
 
 const collectData = async () => {
     console.log('Sending gitHub API request...');
-    const repos = await getRepositories();
-    console.log('Saving repositories...');
-    await saveData(repos);
+    await getRepositories().then(repos => {
+        console.log('Saving repositories...');
+        return saveData(repos);
+    }).catch(err => console.error('Something went wrong:', err));
 };
 
 let intervalDataSyncer: NodeJS.Timeout | null = null;

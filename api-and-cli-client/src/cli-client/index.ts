@@ -59,7 +59,7 @@ class CliClient {
         if (!flagsResult.is_ok)
             return flagsResult;
 
-        const langs = getValueOrDefault(flagsResult.val, 'langs', '').split(',');
+        const langs = flagsResult.val !== null && 'langs' in flagsResult.val ? flagsResult.val.langs.split(',') : [];
         const order = getValueOrDefault(flagsResult.val, 'order', 'DESC');
 
         if (!['ASC', 'DESC'].includes(order.toUpperCase()))
