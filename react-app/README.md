@@ -7,9 +7,9 @@ npm install
 ```
 
 > [!CAUTION]
-> Before running React app run API server
+> Before running React app run API server first
 
-And then you can easily run this React app on port 3001:
+And then you can easily run this React app on port `3001`:
 
 <details>
   <summary>for <code>UNIX</code> systems</summary>
@@ -27,5 +27,8 @@ npm run start:windows
 ```
 
 </details>
+
+> [!TIP]
+> You can easily change running port in `package.json` file on lines 18 and 19
 
 After running the app you can check the app on [`127.0.0.1:3001`](http://127.0.0.1:3001)
