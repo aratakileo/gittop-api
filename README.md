@@ -4,7 +4,7 @@ Easy to use API and React app for getting information about the most popular rep
 
 ### How to run project
 > [!CAUTION]
-> This docs for UNIX systems only
+> Docs below for UNIX systems only
 
 > [!CAUTION]
 > Make sure that you run all the commands listed below from the `gittop-api` directory
